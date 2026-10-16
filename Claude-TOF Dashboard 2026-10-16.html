@@ -1,0 +1,743 @@
+<title>TOF Idea Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#151415;
+  --bg-2:#1e1c1e;
+  --bg-3:#26232a;
+  --bg-inset:#161516;
+  --fg:#EDECEB;
+  --fg-mute:rgba(237,236,235,0.62);
+  --fg-dim:rgba(237,236,235,0.4);
+  --line:rgba(237,236,235,0.09);
+  --line-2:rgba(237,236,235,0.14);
+  --purple:#C8CCFF;
+  --purple-soft:rgba(200,204,255,0.14);
+  --purple-line:rgba(200,204,255,0.32);
+  --orange:#FF5900;
+  --orange-soft:rgba(255,89,0,0.12);
+  --orange-line:rgba(255,89,0,0.42);
+  --red:#AB1410;
+  --red-soft:rgba(171,20,16,0.16);
+  --red-text:#EF6B67;
+  --green:#7CDBA8;
+  --green-soft:rgba(124,219,168,0.14);
+  --yellow:#F2C14E;
+  --yellow-soft:rgba(242,193,78,0.14);
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased;padding:0;margin:0}
+main{max-width:1280px;margin:0 auto;padding:32px 28px 96px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- header ---------- */
+header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:32px}
+.hd-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:34px;height:34px;background:var(--purple);color:var(--bg);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:15px}
+.brand .lbl{display:flex;flex-direction:column;gap:2px}
+.brand .lbl .t{font-weight:600;letter-spacing:-.2px;font-size:14px;color:var(--fg)}
+.brand .lbl .s{color:var(--fg-mute);font-size:11.5px;letter-spacing:.2px}
+.runmode{padding:4px 10px;border-radius:99px;background:var(--purple-soft);color:var(--purple);font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;border:1px solid var(--purple-line)}
+h1{font-size:26px;font-weight:600;letter-spacing:-.6px;margin:0 0 6px;text-wrap:balance}
+h1 .date{color:var(--fg-mute);font-weight:500}
+.subline{color:var(--fg-mute);font-size:13px;margin-bottom:22px}
+.subline .sep{color:var(--fg-dim);padding:0 8px}
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:28px}
+.stat{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stat .k{color:var(--fg-mute);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px}
+.stat .v{font-family:var(--mono);font-size:22px;font-weight:600}
+.stat.g .v{color:var(--green)}
+.stat.y .v{color:var(--yellow)}
+.stat.p .v{color:var(--purple)}
+.stat.r .v{color:var(--red-text)}
+.stat.o .v{color:var(--orange)}
+
+/* ---------- rankings summary ---------- */
+.rank-table{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:28px}
+.rt-head{display:grid;grid-template-columns:28px minmax(0,1fr) 96px 140px 56px 90px 56px 20px;padding:8px 14px;gap:12px;background:var(--bg-3);color:var(--fg-mute);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--line);align-items:center}
+.rt-head span{cursor:pointer;user-select:none}
+.rt-head span:hover{color:var(--purple)}
+.rt-head .active{color:var(--purple)}
+.rt-row{display:grid;grid-template-columns:28px minmax(0,1fr) 96px 140px 56px 90px 56px 20px;align-items:center;padding:8px 14px;gap:12px;border-bottom:1px solid var(--line);cursor:pointer;transition:background 100ms;min-height:38px}
+.rt-row:last-child{border-bottom:0}
+.rt-row:hover{background:var(--bg-3)}
+.rt-row.dim{opacity:.55}
+.rt-row .r{font-family:var(--mono);font-size:11px;color:var(--fg-mute)}
+.rt-row .idea{min-width:0;overflow:hidden}
+.rt-row .idea .n{font-weight:600;letter-spacing:-.1px;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rt-row .cat{font-family:var(--mono);font-size:10px;color:var(--fg-mute);background:var(--bg-3);padding:2px 7px;border-radius:99px;display:inline-block;justify-self:start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rt-row .sc{font-family:var(--mono);font-size:14px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.sc.hi{color:var(--green)}.sc.md{color:var(--yellow)}.sc.lo{color:var(--red-text)}
+.rt-row .mini{display:flex;align-items:flex-end;gap:2px;height:14px}
+.rt-row .mini .b{width:6px;background:var(--fg-dim);border-radius:1px;transition:background 100ms;min-height:1px}
+.rt-row .mini .b.top{background:var(--purple)}
+.rt-row .flags{display:flex;gap:3px;flex-wrap:nowrap;overflow:hidden}
+.rt-row .flags .chip{padding:2px 6px;font-size:9.5px}
+.rt-row .oc .chip{padding:2px 7px;font-size:9.5px}
+.rt-row .caret{color:var(--fg-dim);text-align:center;font-family:var(--mono);font-size:12px}
+
+/* chips */
+.chip{padding:3px 8px;border-radius:99px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;border:1px solid transparent}
+.chip.o-adv{background:var(--green-soft);color:var(--green);border-color:rgba(124,219,168,0.32)}
+.chip.o-inv{background:var(--yellow-soft);color:var(--yellow);border-color:rgba(242,193,78,0.32)}
+.chip.o-park{background:var(--purple-soft);color:var(--purple);border-color:var(--purple-line)}
+.chip.o-kill{background:var(--red-soft);color:var(--red-text);border-color:rgba(171,20,16,0.42)}
+.chip.pat{background:var(--purple-soft);color:var(--purple);border-color:var(--purple-line)}
+.chip.arch{background:var(--bg-3);color:var(--fg)}
+.chip.ca{background:rgba(255,255,255,0.05);color:var(--fg);border-color:var(--line-2)}
+.chip.exp{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-line)}
+.chip.mflag{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-line)}
+.chip.hi{background:rgba(239,107,103,0.14);color:var(--red-text);border-color:rgba(171,20,16,0.42)}
+
+/* ---------- tldr ---------- */
+.tldr{background:var(--bg-2);border:1px solid var(--line);border-left:3px solid var(--purple);border-radius:6px;padding:20px 22px;margin-bottom:44px}
+.tldr .h{color:var(--purple);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px}
+.tldr ul{margin:0;padding-left:20px;color:var(--fg-mute)}
+.tldr li{margin-bottom:6px;font-size:13.5px;line-height:1.6}
+.tldr li strong{color:var(--fg);font-weight:600}
+
+/* ---------- section header ---------- */
+.section-h{color:var(--purple);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.3px;margin:44px 0 16px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.section-h .sub{color:var(--fg-dim);font-size:11px;font-weight:500;letter-spacing:.3px;text-transform:none}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.control{background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:8px 12px;color:var(--fg-mute);font-size:12px;cursor:pointer;font-family:var(--sans)}
+.control:hover{color:var(--fg);border-color:var(--line-2)}
+.control.active{color:var(--purple);border-color:var(--purple-line);background:var(--purple-soft)}
+input.control{width:220px;cursor:text}
+input.control:focus{outline:none;border-color:var(--purple-line)}
+select.control{cursor:pointer}
+.copy-btn{background:var(--purple);color:var(--bg);border:0;border-radius:6px;padding:8px 14px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.2px}
+.copy-btn:hover{filter:brightness(1.08)}
+
+/* ---------- cards ---------- */
+.cards{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--bg-2);border:1px solid var(--line);border-left:3px solid var(--fg-dim);border-radius:10px;overflow:hidden}
+.card.adv{border-left-color:var(--green)}
+.card.inv{border-left-color:var(--yellow)}
+.card.park{border-left-color:var(--purple)}
+.card.kill{border-left-color:var(--red-text)}
+.card-head{display:grid;grid-template-columns:52px 1fr auto auto;gap:16px;padding:18px 22px;align-items:start;cursor:pointer;user-select:none}
+.card-head:hover{background:rgba(255,255,255,0.02)}
+.card-head .r{font-family:var(--mono);font-size:13px;color:var(--fg-mute);font-weight:600;padding-top:2px}
+.card-head .title{display:flex;flex-direction:column;gap:6px}
+.card-head .title .n{font-size:16.5px;font-weight:600;letter-spacing:-.2px;line-height:1.35}
+.card-head .title .o{color:var(--fg-mute);font-size:13px;line-height:1.5}
+.card-head .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.card-head .weight{text-align:right}
+.card-head .weight .s{font-family:var(--mono);font-size:22px;font-weight:600;line-height:1;color:var(--fg)}
+.card-head .weight .s.hi{color:var(--green)}
+.card-head .weight .s.md{color:var(--yellow)}
+.card-head .weight .s.lo{color:var(--red-text)}
+.card-head .weight .l{color:var(--fg-dim);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.card-head .caret{color:var(--fg-dim);font-family:var(--mono);font-size:16px;padding-top:2px}
+.card-body{border-top:1px solid var(--line);padding:22px 24px 26px;display:none;flex-direction:column;gap:22px}
+.card.open .card-body{display:flex}
+.card.open .card-head .caret{transform:rotate(90deg)}
+.card-head .caret{transition:transform 150ms}
+
+/* body sections */
+.sig{background:var(--purple-soft);border:1px solid var(--purple-line);border-radius:6px;padding:12px 16px;font-family:var(--mono);font-size:12.5px;color:var(--fg);line-height:1.55;display:flex;gap:10px;align-items:flex-start}
+.sig .k{color:var(--purple);font-weight:700;flex-shrink:0}
+.exp-callout{background:var(--orange-soft);border:1px solid var(--orange-line);border-radius:6px;padding:12px 16px;font-size:13px;color:var(--fg);line-height:1.55}
+.exp-callout .k{color:var(--orange);font-weight:700;font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+
+.plain{background:rgba(200,204,255,0.06);border-left:2px solid var(--purple);border-radius:0 4px 4px 0;padding:12px 16px;font-size:13.5px;color:var(--fg-mute);line-height:1.6;font-style:italic}
+.plain .k{color:var(--purple);font-weight:600;font-style:normal;text-transform:uppercase;font-size:10.5px;letter-spacing:1px;margin-bottom:4px;display:block}
+
+.sec-lbl{color:var(--purple);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+
+.rubric{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.rubric .c{background:var(--bg-3);border-radius:6px;padding:10px 8px;display:flex;flex-direction:column;gap:6px;align-items:center;cursor:pointer;transition:background 100ms}
+.rubric .c:hover{background:rgba(255,255,255,0.06)}
+.rubric .c.dim{opacity:.55}
+.rubric .c .k{font-family:var(--mono);font-size:9.5px;color:var(--fg-mute);text-transform:uppercase;letter-spacing:.7px}
+.rubric .c .v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--fg)}
+.rubric .c .bar{width:100%;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.rubric .c .bar>span{display:block;height:100%;background:var(--purple);border-radius:2px}
+.rubric .c.dim .bar>span{background:var(--fg-dim)}
+
+/* three clocks */
+.clocks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.clock{border-top:2px solid var(--line-2);background:var(--bg-3);border-radius:0 0 6px 6px;padding:12px 14px}
+.clock.rung{border-top-color:var(--green)}
+.clock.closing{border-top-color:var(--orange)}
+.clock.late{border-top-color:var(--red-text)}
+.clock .k{font-family:var(--mono);font-size:10.5px;color:var(--fg-mute);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.clock .k .gl{font-size:11px}
+.clock.rung .k .gl{color:var(--green)}
+.clock.closing .k .gl{color:var(--orange)}
+.clock .body{font-size:12.5px;color:var(--fg);line-height:1.5;margin-bottom:8px}
+.clock .date{font-family:var(--mono);font-size:11px;color:var(--fg-mute)}
+.verdict{background:var(--purple-soft);border:1px solid var(--purple-line);border-radius:6px;padding:12px 16px;margin-top:10px}
+.verdict .k{color:var(--purple);font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.verdict .v{font-size:13.5px;color:var(--fg);line-height:1.55}
+.verdict .badge{display:inline-block;padding:2px 8px;background:var(--bg);border-radius:99px;font-family:var(--mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:6px;color:var(--purple)}
+
+.hyp{background:var(--bg-3);border-radius:6px;padding:14px 16px;font-size:13.5px;color:var(--fg);line-height:1.6}
+.hyp .k{color:var(--yellow);font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-right:6px;background:var(--yellow-soft);padding:2px 6px;border-radius:99px;display:inline-block;margin-right:8px}
+
+/* margin layers */
+.mlayers{display:flex;gap:6px;flex-wrap:wrap}
+.mlayer{background:var(--bg-3);border-radius:99px;padding:6px 12px;display:flex;align-items:center;gap:8px;font-size:12px}
+.mlayer .l{font-family:var(--mono);font-size:9.5px;color:var(--purple);text-transform:uppercase;letter-spacing:.7px;font-weight:700}
+.mlayer .w{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--fg)}
+.mlayer .n{color:var(--fg-mute);font-size:11.5px;border-left:1px solid var(--line-2);padding-left:8px;margin-left:2px}
+
+/* TAM block */
+.tam{background:var(--bg-3);border-radius:8px;padding:16px}
+.tam .rc{background:var(--bg);border:1px solid var(--orange-line);border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:var(--fg)}
+.tam .rc b{color:var(--orange);font-weight:600}
+.tam-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tam-method{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.tam-method .k{color:var(--purple);font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.tam-method .a{font-family:var(--mono);font-size:11.5px;color:var(--fg-mute);line-height:1.5;margin-bottom:8px}
+.tam-method .s{color:var(--fg-dim);font-size:10.5px;font-style:italic;margin-bottom:8px}
+.tam-method .r{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--fg)}
+.tam .base{background:var(--purple-soft);border:1px solid var(--purple-line);border-radius:6px;padding:10px 14px;margin-bottom:10px;font-size:13px;color:var(--fg)}
+.tam .base b{color:var(--purple);font-weight:600;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-right:8px}
+.tam .san{border-left:2px solid var(--fg-dim);padding-left:12px;font-size:12px;color:var(--fg-mute);line-height:1.55}
+
+/* competitor triad */
+.triad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tcol{background:var(--bg-3);border-radius:6px;padding:12px 14px}
+.tcol .k{color:var(--purple);font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.tcol .entry{border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:8px;font-size:12.5px}
+.tcol .entry:last-child{border-bottom:0;padding-bottom:0;margin-bottom:0}
+.tcol .entry .n{font-weight:600;color:var(--fg);margin-bottom:2px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.tcol .entry .meta{color:var(--fg-mute);font-size:11px;font-family:var(--mono)}
+.tcol .entry .note{color:var(--fg-mute);font-size:12px;line-height:1.5;margin-top:4px}
+.thr{padding:2px 6px;border-radius:99px;font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.thr.HIGH{background:rgba(239,107,103,0.16);color:var(--red-text)}
+.thr.MED{background:var(--yellow-soft);color:var(--yellow)}
+.thr.LOW{background:var(--bg-3);color:var(--fg-mute)}
+.thr.MED-HIGH{background:rgba(239,107,103,0.10);color:var(--yellow)}
+.thr.LOW-MED{background:var(--bg-3);color:var(--fg-mute)}
+.thr.VERY.HIGH{background:rgba(239,107,103,0.28);color:var(--red-text)}
+.statusquo{background:var(--orange-soft);border:1px dashed var(--orange-line);border-radius:6px;padding:12px 16px;margin-top:12px}
+.statusquo .k{color:var(--orange);font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.statusquo .v{color:var(--fg);font-size:13px;line-height:1.55}
+
+/* counter-case */
+.counter{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.counter .b{background:var(--bg-3);border-left:3px solid var(--yellow);border-radius:0 6px 6px 0;padding:12px 14px}
+.counter .b .k{color:var(--yellow);font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.counter .b .v{font-size:12.5px;color:var(--fg);line-height:1.55}
+
+/* risks */
+.risks{display:flex;flex-direction:column;gap:8px}
+.risk{background:var(--bg-3);border-radius:6px;padding:12px 14px}
+.risk .rh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.risk .rh .tp{padding:3px 8px;border-radius:99px;font-family:var(--mono);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.risk .rh .tp.condition{background:var(--yellow-soft);color:var(--yellow)}
+.risk .rh .tp.actor-move{background:var(--orange-soft);color:var(--orange)}
+.risk .rh .lk{padding:3px 8px;border-radius:99px;font-family:var(--mono);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.risk .rh .lk.high{background:rgba(255,89,0,0.2);color:var(--orange)}
+.risk .rh .lk.medium-high{background:rgba(255,89,0,0.15);color:var(--orange)}
+.risk .rh .lk.medium{background:var(--yellow-soft);color:var(--yellow)}
+.risk .rh .lk.low-medium,.risk .rh .lk.medium-low{background:rgba(242,193,78,0.10);color:var(--fg-mute)}
+.risk .rh .lk.low{background:var(--bg-inset);color:var(--fg-mute)}
+.risk .rh .lk.very.high{background:rgba(255,89,0,0.28);color:var(--orange)}
+.risk .rh .lk.certain{background:rgba(171,20,16,0.24);color:var(--red-text)}
+.risk .mech{font-size:12.5px;color:var(--fg);line-height:1.55;margin-bottom:8px}
+.risk .mech b{color:var(--fg);font-weight:600}
+.risk .resp{background:var(--purple-soft);border-radius:4px;padding:8px 12px;font-size:12px;color:var(--fg);line-height:1.5}
+.risk .resp b{color:var(--purple);font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.6px;margin-right:6px}
+
+/* right-to-win assets */
+.rtw{display:flex;flex-direction:column;gap:10px}
+.rtw-asset{background:var(--bg-3);border-radius:6px;padding:12px 14px}
+.rtw-asset .h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
+.rtw-asset .n{font-weight:600;color:var(--fg);font-size:13px;line-height:1.4;flex:1 1 auto}
+.stress{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.stress .b{background:var(--bg);padding:4px 8px;border-radius:99px;font-family:var(--mono);font-size:10.5px;color:var(--fg);border:1px solid var(--line-2);display:inline-flex;gap:4px;align-items:center}
+.stress .b.pass{color:var(--green);border-color:rgba(124,219,168,0.32)}
+.stress .b.fail{color:var(--red-text);border-color:rgba(171,20,16,0.42)}
+.aff{background:var(--bg-inset);border-radius:4px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:11.5px;color:var(--fg-mute);align-items:baseline}
+.aff .k{color:var(--fg-dim);font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:700}
+.aff .v{color:var(--fg)}
+.aff .v.hypo{color:var(--orange);font-style:italic}
+.honestgaps{background:var(--yellow-soft);border:1px dashed rgba(242,193,78,0.32);border-radius:6px;padding:12px 16px;margin-top:8px}
+.honestgaps .k{color:var(--yellow);font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.honestgaps .v{color:var(--fg);font-size:12.5px;line-height:1.55}
+
+/* margin flag / kill risk */
+.mflag-box{background:var(--orange-soft);border:1px solid var(--orange-line);border-radius:6px;padding:12px 16px}
+.mflag-box .k{color:var(--orange);font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.mflag-box .v{color:var(--fg);font-size:12.5px;line-height:1.55}
+.kill-box{background:var(--red-soft);border:1px solid rgba(171,20,16,0.42);border-radius:6px;padding:12px 16px}
+.kill-box .k{color:var(--red-text);font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.kill-box .v{color:var(--fg);font-size:12.5px;line-height:1.55}
+
+/* generic named-section */
+.named{background:var(--bg-3);border-radius:6px;padding:14px 16px;font-size:13px;color:var(--fg);line-height:1.6}
+
+/* landscape */
+.landscape-table{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.lt-head{display:grid;grid-template-columns:1.4fr 90px 130px 3fr;padding:12px 18px;gap:12px;background:var(--bg-3);color:var(--fg-mute);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--line)}
+.lt-row{display:grid;grid-template-columns:1.4fr 90px 130px 3fr;padding:12px 18px;gap:12px;border-bottom:1px solid var(--line);align-items:center;font-size:12.5px}
+.lt-row:last-child{border-bottom:0}
+.lt-row .cl{font-weight:600;color:var(--fg)}
+.lt-row .cl .cn{font-size:12px;color:var(--fg-mute);margin-top:4px;font-family:var(--mono)}
+.lt-row .n{font-family:var(--mono);font-weight:600;color:var(--fg)}
+.lt-row .n .p{color:var(--fg-mute);font-weight:400;font-size:11px}
+.gap-chip{padding:4px 10px;border-radius:99px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;display:inline-block}
+.gap-chip.saturated{background:var(--red-soft);color:var(--red-text)}
+.gap-chip.whitespace{background:var(--green-soft);color:var(--green)}
+.gap-chip.forming{background:var(--yellow-soft);color:var(--yellow)}
+.lt-row .note{color:var(--fg-mute);font-size:12px;line-height:1.5}
+.lt-row .note .cov{color:var(--purple);font-family:var(--mono);font-size:10.5px;font-weight:700;margin-top:6px;display:inline-block;padding:2px 8px;background:var(--purple-soft);border-radius:99px;letter-spacing:.4px}
+.lt-row .ca{color:var(--fg-dim);font-size:11px;margin-top:4px;font-style:italic}
+
+/* footer */
+footer{margin-top:64px;padding:24px 0;border-top:1px solid var(--line);color:var(--fg-mute);font-size:12px;line-height:1.6}
+footer .r{margin-top:8px;color:var(--fg-dim);font-size:11px;font-family:var(--mono)}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg-2);border:1px solid var(--purple-line);color:var(--fg);padding:12px 18px;border-radius:8px;font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:1000;opacity:0;transform:translateY(10px);transition:all 200ms}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* responsive */
+@media (max-width:900px){
+  main{padding:20px 16px 64px}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .rt-head,.rt-row{grid-template-columns:32px 1fr 60px 32px;gap:8px}
+  .rt-head .rc,.rt-head .rmini,.rt-head .rfl,.rt-head .rcat,
+  .rt-row .cat,.rt-row .mini,.rt-row .flags,.rt-row .oc{display:none}
+  .rubric{grid-template-columns:repeat(4,1fr)}
+  .clocks,.triad,.counter,.tam-methods{grid-template-columns:1fr}
+  .lt-head,.lt-row{grid-template-columns:1fr 60px 100px}
+  .lt-head .lnote,.lt-row .note{display:none}
+}
+</style>
+
+<main>
+<header>
+  <div class="hd-top">
+    <div class="brand">
+      <div class="mark">&#9670;</div>
+      <div class="lbl">
+        <div class="t">Diagram</div>
+        <div class="s">Top-of-funnel idea board</div>
+      </div>
+    </div>
+    <div class="runmode">v3-CLEAN &#183; desk</div>
+  </div>
+  <h1>TOF Run &#8212; <span class="date" id="rundate">&#8230;</span></h1>
+  <div class="subline" id="subline"></div>
+  <div class="stats" id="stats"></div>
+  <div class="section-h">Rankings summary <span class="sub">click any row to jump to card</span></div>
+  <div class="rank-table" id="ranktable"></div>
+  <div class="tldr" id="tldr"></div>
+</header>
+
+<div class="section-h">Ranked ideas &#8212; v3 cards
+  <span class="sub" id="cardcount"></span>
+</div>
+<div class="controls">
+  <input class="control" id="search" placeholder="Search name, one-liner, signal, pain&#8230;"/>
+  <select class="control" id="filter-outcome">
+    <option value="">All outcomes</option>
+    <option value="advance">Advance only</option>
+    <option value="investigate">Investigate only</option>
+    <option value="park">Park only</option>
+    <option value="kill">Kill only</option>
+  </select>
+  <select class="control" id="sort">
+    <option value="score">Score DESC</option>
+    <option value="rank">Original rank</option>
+    <option value="name">Name A-Z</option>
+    <option value="category">Category</option>
+    <option value="outcome">Outcome group</option>
+  </select>
+  <button class="copy-btn" id="copybtn">Copy decision summary</button>
+  <button class="control" id="expandall">Expand all</button>
+  <button class="control" id="collapseall">Collapse all</button>
+</div>
+<div class="cards" id="cards"></div>
+
+<div class="section-h">Global landscape &#8594; Canada gap <span class="sub">every cluster with n&#8805;3 examined per doctrine rule #3</span></div>
+<div class="landscape-table" id="landscape"></div>
+
+<footer>
+  <div id="footinfo"></div>
+  <div class="r" id="footmeta"></div>
+</footer>
+</main>
+
+<div class="toast" id="toast">Copied</div>
+
+<script id="tof-data" type="application/json">{"run":{"runDate":"2026-10-16","runMode":"desk \u00b7 DELTA refresh (Sep 14 \u2192 Oct 16, one month of fresh deal activity)","doctrineVersion":"v3-CLEAN (Sep 2026)","extractSources":["Net0i Organisations 2026-10-16 (70 orgs, Sep 14 \u2013 Oct 16, Pre-Seed/Seed + Early-Stage VC > $100K)","PitchBook Search Results 2026-10-16 (338 orgs, Sep 14 \u2013 Oct 16, all VC early stages > $200K)"],"unifiedCount":408,"canadianCount":10,"streams":3,"cards":[{"name":"Low-Carbon Electrochemical Cement \u2014 Canadian Anchor","oneLiner":"Build a Canadian electrochemical cement plant alongside Cura (Calgary) to supply Canadian ready-mix and tech-giant procurement under the global low-carbon cement pull.","breakInPattern":"unbundle","archetype":"physical","category":"Industry / Cement","country":"Canada","signal":"Cura (Calgary) raised $10M Early Stage VC in Oct 2026 for electrochemical cement \u2014 first material Canadian anchor in a category where Sublime Systems + Brimstone (US) carry $200M+ each with corporate offtake (Holcim, Microsoft) despite losing DOE funding in Mar 2025.","priorContext":"PRIOR CONTEXT: Low-carbon cement well-trodden globally through Sublime (Holcim offtake), Brimstone (process route), CarbonCure (CO2 injection). Sep 2026 TOF run noted green_cement as n=1 cluster with 0 Canadian anchors. Oct Cura signal reclassifies this.","threeClocks":{"enabling":{"rung":true,"evidence":"ASTM C1157 performance-based cement standard already allows non-Portland alternatives. Electrochemical process routes validated through Sublime 30 kt/yr Holyoke facility (coming online 2028).","date":"2024-01"},"budget":{"rung":true,"evidence":"Microsoft (and other hyperscalers) are signing offtake for low-carbon cement to decarb data center construction. Holcim's binding offtake reservation for Sublime's Holyoke plant Mar 2024 = template. Canadian hyperscaler build-out (Meta Sturgeon County $13B + Alberta 1.2 GW allocated DC capacity) = named 2027-28 cement buyer.","firstPurchaseDate":"2028-Q1"},"competitive":{"status":"open","closingEvent":"Sublime or Brimstone announces Canadian expansion / Canadian hyperscaler offtake, OR CarbonCure extends from CO2-injection to full electrochemical route.","closingBy":"2028-06"},"verdict":"on-time","datedPrediction":"First Canadian commercial offtake lands Q1-Q3 2028, because Meta Sturgeon County construction peaks 2027-28 and Microsoft/Google Canadian builds will mirror their US low-carbon cement procurement by 12-18 months."},"painPoint":"HYPOTHESIS. Segment: Canadian ready-mix concrete producers (Lafarge Canada, Lehigh Hanson, Lehigh Canada); hyperscaler construction procurement (Meta, Google, Microsoft Canada); provincial infrastructure (highways, bridges). Top-3 need: (1) hit Scope 3 cement decarb targets (cement = 7-8% of global emissions), (2) match US corporate offtake expectations when selling to tech-giants with Canadian operations, (3) qualify for federal / provincial clean procurement preferences. Attempted-solution: CarbonCure (BC) has been injecting CO2 for 10+ years \u2014 the attempted-solution evidence Diagram should respect.","solution":"Co-build / strategic partnership with Cura to establish a Canadian electrochemical cement plant (10-30 kt/yr first phase, Calgary or ON/QC near-ready-mix). Earned insight: Diagram's role is NOT to invent the chemistry (Cura has it) \u2014 it's capital structuring, provincial industrial-policy packaging, and tech-giant Canadian offtake BD. Pricing: $150-250/t premium over Portland cement, closing against Scope 3 reduction value.","marginLayers":[{"layer":"% of transaction (cement sale)","weightPct":75,"note":"premium-priced low-carbon cement offtake, 10-15% margin at plant level"},{"layer":"data / MRV","weightPct":15,"note":"Scope 3 reduction certification data sold to buyers for carbon-accounting value"},{"layer":"services attach","weightPct":10,"note":"integration + offtake structuring"}],"referenceCostBase":"Canadian cement market: ~15 Mt/yr production \u00d7 CAD 150/t = CAD 2.3B/yr domestic cement spend (Cement Association of Canada 2024). CONTEXT.","tamMethodology":[{"method":"outsourced-function-replacement","arithmetic":"NA low-carbon cement addressable market USD 5-10B/yr by 2030 (RMI + BNEF industrial decarb projections). Canadian share proportional to construction + cement production ~15% = USD 750M-1.5B TAM. Diagram-Cura NewCo captures 5-10% at maturity = USD 40-150M revenue.","sourceComparable":"Sublime Systems Holcim offtake disclosures; RMI Industrial Decarb report 2024","result":"$750M-1.5B TAM Canada"},{"method":"value-based","arithmetic":"5% of Canadian cement market at low-carbon premium (CAD 150/t \u00d7 15 Mt \u00d7 5% \u00d7 CAD 200/t premium) = CAD 150M/yr value pool at maturity. Realistic penetration 2% by 2030 = CAD 60M/yr.","sourceComparable":"Cement Association of Canada market data 2024","result":"$60-150M CAD realistic 2030"}],"tamBase":"$750M-1.5B TAM Canada \u2014 within selective floor with niche-dominance argument on hyperscaler + public infrastructure segments.","buyerLevelSanity":"A Canadian ready-mix producer (Lafarge Canada ~5 Mt/yr) uses ~5 Mt/yr cement; replacing 5% with low-carbon = 250 kt/yr offtake at CAD 200/t premium = CAD 50M/yr offtake value. Defensible per-buyer ACV.","competitors":{"direct":[{"name":"Sublime Systems (US)","founded":"2020","funding":"USD 200M+","geography":"US","threat":"HIGH \u2014 scaled, Holcim offtake, Microsoft customer"},{"name":"Brimstone (US)","founded":"2019","funding":"USD 70M+","geography":"US","threat":"MED \u2014 different process route, calcium silicate"},{"name":"Cura (Canada)","founded":"~2023","funding":"USD 10M Oct 2026","geography":"Calgary","threat":"HIGH \u2014 Canadian anchor, same geo play, head start"}],"substitutes":[{"name":"Portland cement + CO2 injection (CarbonCure BC)","note":"the actual incumbent for low-carbon claims in Canada \u2014 not deep decarb but currently sold"},{"name":"Supplementary cementitious materials (fly ash, slag)","note":"5-20% substitution incumbent, limited by supply"}],"adjacentExtenders":[{"name":"Lafarge Canada / Lehigh Hanson","structuralReasonNotDirect":"Legacy cement majors; have in-house R&D (ECOPlanet brand) but revenue model is Portland cement volume \u2014 electrochemical cannibalizes capacity. Will adopt not build."},{"name":"CarbonCure (NS)","structuralReasonNotDirect":"Canadian decarb incumbent via CO2 injection; different process (post-mix add) vs upstream electrochemical. Extension would mean rebuilding chemistry."}]},"statusQuo":"Portland cement + modest SCM substitution + optional CarbonCure CO2 injection \u2014 the real incumbent for 95%+ of Canadian cement today. Low-carbon alternatives are <2% of market.","climateImpact":"Direct \u2014 Canadian cement produces ~12 Mt CO2/yr (Scope 1). 60-90% emissions reduction per tonne low-carbon cement; 5% market penetration = ~400 kt CO2/yr avoided.","unfairAdvantage":[{"assetName":"Sagard SPES industrial relationships + provincial industrial-policy packaging capability","category":"credibility","stressTest":{"specific":true,"headStart":"9-12 months on federal/provincial co-financing","exclusive":true,"relevant":true},"affinityCheck":{"primaryRelationship":"weak","internalOwner":"SPES energy + Cap Form CA","lastContactDate":"none logged in this run","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}},{"assetName":"Partage with Cura as JV partner (they bring tech, we bring capital + distribution)","category":"design-partner-access","stressTest":{"specific":true,"headStart":"18+ months of IP development saved","exclusive":true,"relevant":true},"affinityCheck":{"primaryRelationship":"no","internalOwner":"none","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"No cement operator; no provincial/federal clean industrial policy relationships (NRCan Clean Growth Program, Investissement Qu\u00e9bec, Alberta Industrial Heartland). No warm Cura relationship yet. Building this means (a) sourcing a plant-ops leader from Lafarge/Holcim NA, (b) establishing a Cura partnership structure, (c) locking a hyperscaler customer letter of intent before capital commits \u2014 6-12 months to decision-ready.","graveyard":"~2010-2020: Calera (CO2 to cement, 2007-2016, bankrupted \u2014 unit economics never worked); Novacem (UK, 2010-2014, bankrupted \u2014 magnesium feedstock cost); Solidia (NJ, ongoing but small). Cause of death: no willing offtake buyer at premium prices + no carbon pricing to close the gap. Both have changed as of 2026: Microsoft/Google data center buyer motion is real + carbon pricing (Canadian federal + Alberta TIER CAD 130) closes gap.","threeYearCounterfactual":"Could this have been built in 2023? Partially \u2014 the chemistry existed (Sublime founded 2020) but no willing Canadian hyperscaler offtake and no Cura anchor to partner with. The Meta Alberta commitment (Jul 2026) + Cura emergence (Oct 2026) are the specific 2026 catalysts.","keyRisks":[{"type":"actor-move","subject":"Sublime enters Canada","mechanism":"Sublime's Microsoft offtake positions them to pursue Canadian hyperscaler builds 2027-28 directly rather than through Canadian partnership.","likelihood":"medium \u2014 Sublime is capital-constrained post-DOE but strategically motivated","response":"Position Canadian-content / CUSMA sourcing advantage; lock Cura partnership before Sublime makes outreach."},{"type":"condition","subject":"Hyperscaler cement offtake sustainability","mechanism":"Microsoft/Google data center cement procurement is new (2024-26); may not extend to Canadian builds at same premium rates as US.","likelihood":"medium","response":"Diversify beyond hyperscalers to provincial infrastructure (CAD 100B+ transportation + public buildings pipeline through 2035)."},{"type":"condition","subject":"Portland cement price","mechanism":"Portland cement at CAD 150/t vs low-carbon premium CAD 300-400/t = 2\u00d7 cost. If Portland prices rise (energy, carbon), gap narrows; if stable, premium stays material.","likelihood":"low near-term \u2014 Canadian Portland prices have been stable","response":"Design business for CAD 200/t premium as base case; carbon-tax escalator closes gap over time."},{"type":"actor-move","subject":"Cura prefers independent scaling","mechanism":"Cura may continue solo, declining a Diagram partnership and taking Series A from pure VC.","likelihood":"medium","response":"Diagram offers (a) non-dilutive co-build structure, (b) hyperscaler offtake orchestration, (c) provincial capital access \u2014 differentiates from VC equity-only."}],"sourceValidation":{"score":74,"recency":30,"reputability":26,"corroboration":18,"note":"Strong: Sublime/Holcim + hyperscaler buyer motion. Weak: no primary Cura conversation."},"confidence":"3/4 streams","killRisk":"Partnership with Cura is the single-point-of-failure dependency; if Cura prefers independent VC path, the Diagram thesis stalls.","marginFlag":{"level":"orange","note":"Physical cement plant \u2014 10-15% GM at plant level, 8-12% blended. Not software returns. Valuation = infra IPP, not SaaS. Premium pricing + hyperscaler offtake lifts to 15-20% at scale."},"previouslyExplored":{"number":45,"name":"Industrial Process Optimization","note":"Diagram opened Industrial Process Optimization (#45, Aug 2026) and Industrial Flexible-Load OS (#46, Aug 2026) which touch industrial decarb software. This card is the physical / asset-owner complement \u2014 adjacent, not duplicative. Reviewer decides whether to run as distinct track or fold into #45."},"scores":{"pain":4,"market":4,"timing":4,"solution":3,"advantage":3,"impact":5,"defensibility":3},"gates":{"market":{"result":"for","note":"$750M-1.5B TAM sufficient; selective floor cleared"},"timing":{"result":"for","note":"Meta Alberta + Cura emergence + Holcim/Sublime template all 2026"},"margin":{"result":"conditional","note":"physical plant 10-15% GM at plant level"},"rightToWin":{"result":"conditional","note":"Cura partnership would be real; otherwise no cement team"},"killTest":{"result":"conditional","note":"Sublime has US head start; Cura is the Canadian geo peer"},"scope":{"result":"for","note":"climate mitigation direct, high-impact"}},"gateVerdict":"ADVANCE \u2014 the clean path is Cura partnership. Diagram should book a meeting in 30 days to assess partnership shape before Cura closes Series A.","outcome":"advance","id":"low-carbon-electrochemical-cement-canadian-anchor","rank":1,"weightedScore":3.75},{"name":"Behind-the-Meter Renewable DC Infrastructure Developer","oneLiner":"Co-develop behind-the-meter renewable + storage power infrastructure for the Alberta hyperscaler rush \u2014 the physical complement to the Sep ADVANCE card on Grid-Flexible AI Data Center Software.","breakInPattern":"fill-a-gap","archetype":"asset-owner-operator","category":"Data Centers / Energy","country":"Canada","signal":"Green Data Systems (Vancouver) raised $13M Seed Round in Oct 2026 \u2014 Canadian DC + renewable energy developer. Meta Sturgeon County $13B / 970 MW announced Jul 2026 with 932 MW gas plant (Pembina + Morgan Stanley + Kineticor). AESO interim 1,200 MW DC allocation already assigned; requested DC load exceeds 20,600 MW vs 13,000 MW provincial peak (Sep 2026). Hydro-Qu\u00e9bec considering 2\u00d7 large-load rate \u2014 pushes everything to Alberta.","priorContext":"PRIOR CONTEXT: Sep 2026 TOF run surfaced Grid-Flexible AI Data Center Software (3.60, ADVANCE escalated) as the SOFTWARE play against the same Meta Alberta catalyst. This card is the PHYSICAL infrastructure complement. Fresh Oct 2026 search confirms Alberta's grid is explicitly open for behind-the-meter.","threeClocks":{"enabling":{"rung":true,"evidence":"BTM solar+storage LCOE now USD 40-60/MWh in Alberta (NREL 2025 ATB); AESO interconnection pathway established 2024-26.","date":"2024-01"},"budget":{"rung":true,"evidence":"Meta committed $13B Jul 2026; Pembina + Morgan Stanley + Kineticor providing 932 MW gas plant; AESO 20.6 GW DC request vs 13 GW peak = explicit gap for BTM renewable to fill.","firstPurchaseDate":"2027-Q1"},"competitive":{"status":"closing","closingEvent":"Capital Power, TC Energy, or Enbridge sole-sources the Canadian hyperscaler BTM renewable role; US developers (Clearway, Invenergy) enter Canada.","closingBy":"2027-12"},"verdict":"on-time","datedPrediction":"First BTM renewable DC project signs power purchase agreement Q1-Q3 2027, because Meta's second Alberta campus (and Google/Microsoft entries) will need committed BTM power 18-24 months ahead of commissioning."},"painPoint":"HYPOTHESIS. Segment: Alberta hyperscaler builds (Meta campus #2, Google, Microsoft rumored); AESO as system operator; Canadian co-locators (Rogers, TELUS, Cologix). Top-3 need: (1) secure MW capacity under AESO allocation constraints, (2) meet corporate 24/7 clean energy commitments (Meta claims 100% renewable match), (3) hedge gas-plant exposure as Alberta carbon pricing escalates (CAD 130 TIER by 2026 MOU). Attempted-solution: Meta's Clear Fork 600 MW solar (Enbridge, Texas); Pembina gas plant for Sturgeon County \u2014 buyers paying for BTM power.","solution":"Project developer + capital partner for 100-500 MW BTM solar + wind + 4-hr storage facilities co-located or wired-direct to Alberta DC campuses. Deals: 15-20yr PPA structures with hyperscaler takeoff + capacity firming. Diagram's role: capital structuring, land acquisition, AESO interconnection, offtake negotiation. Not the panel maker, the developer.","marginLayers":[{"layer":"% of transaction (long-term PPA)","weightPct":80,"note":"USD 60-90/MWh BTM PPA, 15-20yr terms with hyperscaler offtake"},{"layer":"services attach (development fees)","weightPct":15,"note":"3-6% dev fees on CAD 300-500M project capex"},{"layer":"data / MRV","weightPct":5,"note":"24/7 CFE certification data"}],"referenceCostBase":"Alberta DC electricity need 2027-30: ~5 GW incremental \u00d7 CAD 60/MWh \u00d7 8760 hrs = CAD 2.6B/yr new demand (AESO forecasts).","tamMethodology":[{"method":"outsourced-function-replacement","arithmetic":"Alberta DC power demand increment 2027-30: 5 GW \u00d7 8760 \u00d7 CAD 60 = CAD 2.6B/yr PPA value. BTM share realistic at 30-50% = CAD 800M-1.3B/yr PPA pool. Diagram-developed project captures 10% = CAD 80-130M/yr revenue.","sourceComparable":"AESO IRS 2026; Meta Pembina deal structure","result":"$800M-1.3B PPA pool"},{"method":"value-based","arithmetic":"At BTM LCOE $50/MWh vs AESO wholesale $100/MWh average = $50/MWh savings. 5 GW \u00d7 8760 \u00d7 $50 = USD 2.2B/yr value. Developer share ~5-10% = USD 100-220M/yr.","sourceComparable":"NREL ATB 2025 BTM solar+storage; AESO wholesale 2025 avg","result":"$100-220M/yr developer rev"}],"tamBase":"$800M-1.3B PPA pool \u2014 in-floor; selective dominance on Alberta BTM segment.","buyerLevelSanity":"Meta Sturgeon County 970 MW \u00d7 50% BTM = 485 MW \u00d7 CAD 60/MWh \u00d7 8760 = CAD 255M/yr PPA. Developer margin 5-8% on project cost (500 MW ~ CAD 500M capex) = CAD 25-40M dev fees. Reasonable.","competitors":{"direct":[{"name":"Pembina Pipeline + Morgan Stanley + Kineticor","founded":"legacy","funding":"infra-grade","geography":"AB","threat":"HIGH \u2014 won Meta Sturgeon County deal"},{"name":"Capital Power","founded":"legacy","funding":"public TSX","geography":"AB","threat":"HIGH \u2014 publicly named Alberta hyperscaler strategy, 250 MW interim Meta supply"},{"name":"Clearway Energy / Invenergy (US)","founded":"legacy","funding":"infra-grade","geography":"US-first","threat":"MED \u2014 Canadian entry possible 2027"}],"substitutes":[{"name":"Grid power + AESO wholesale","note":"the actual incumbent \u2014 accept gas-heavy grid mix"},{"name":"Pure gas BTM (Meta Pembina pattern)","note":"the first-wave incumbent \u2014 simpler to permit but climate-exposed"}],"adjacentExtenders":[{"name":"TC Energy","structuralReasonNotDirect":"Pipeline-first revenue model; renewable + storage development is secondary business, done through subsidiaries not directly."},{"name":"Enbridge","structuralReasonNotDirect":"Pipeline / regulated utility; renewable development is small portfolio within larger co."}]},"statusQuo":"Grid power + gas BTM (Pembina for Meta) \u2014 real incumbent for the first wave of Alberta hyperscaler builds.","climateImpact":"Direct \u2014 500 MW BTM renewable displaces 500 MW gas = ~2.2 Mt CO2/yr avoided (Alberta grid avg emissions factor).","unfairAdvantage":[{"assetName":"Sagard infrastructure capital capability + Alberta LP base","category":"execution","stressTest":{"specific":true,"headStart":"9-12 months on project capital structuring","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"weak","internalOwner":"SPES + SCP infra","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}},{"assetName":"Green Data Systems (Vancouver) as potential JV / co-development partner","category":"design-partner-access","stressTest":{"specific":true,"headStart":"12 months on BC/AB project pipeline","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"no","internalOwner":"none","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"No renewable developer team; no AESO interconnection project history; no hyperscaler enterprise relationships. Pembina + Morgan Stanley have both; so does Capital Power. Catching up requires acqui-hiring senior dev team (~15 people in Alberta who fit) or partnering with Green Data Systems as co-dev.","graveyard":"~2015-2022: Enel X / NextEra pursued US BTM data center with mixed results. Cause of death: no hyperscaler was buying 24/7 clean power at scale \u2014 they bought RECs. The change (2023-26): Microsoft, Meta, Google all now publicly committed to 24/7 CFE on new builds \u2014 the buyer motion is real.","threeYearCounterfactual":"Could this have been built in 2023? No \u2014 Meta Alberta commitment was Jul 2026; AESO 1,200 MW DC allocation only recently assigned. 2026 is the earliest year the buyer motion is Canadian.","keyRisks":[{"type":"actor-move","subject":"Capital Power consolidates","mechanism":"Capital Power (public TSX, Alberta-native, infra-grade capital) may win the next 3-5 hyperscaler BTM deals, foreclosing the market.","likelihood":"high \u2014 explicitly stated in Sep 2026 CEO comments","response":"Partner with Capital Power as capital co-sponsor on 20% equity rather than compete; or focus on co-locator / mid-size DC segment where Capital Power's bandwidth is thin."},{"type":"condition","subject":"AESO allocation politics","mechanism":"The 1,200 MW interim DC allocation is now assigned. Future allocation politics (Alberta government ownership restrictions, local opposition) may delay projects 12-24 months.","likelihood":"medium","response":"Diversify into SK (BCE 1.2 GW announced), ON (Hydro One grid), BC. Alberta-only risk concentration = bad."},{"type":"actor-move","subject":"Hyperscalers vertically integrate","mechanism":"Google/Microsoft could develop BTM themselves (as Meta did with Clear Fork solar/Enbridge) rather than outsource.","likelihood":"medium","response":"Position as co-developer / capital partner, not pure outsource; align economics with hyperscaler mandates."},{"type":"condition","subject":"Alberta carbon/grid policy","mechanism":"Alberta provincial government has been politically ambivalent on carbon pricing and renewables; policy shift could change gas-vs-renewable economics suddenly.","likelihood":"medium-high","response":"Design projects to work with/without TIER pricing uplift; don't bank on carbon-price-driven uplift as core thesis."}],"sourceValidation":{"score":80,"recency":30,"reputability":27,"corroboration":23,"note":"Strong: Meta announcement + AESO data + Capital Power public statements. Weak: no primary hyperscaler conversation."},"confidence":"4/4 streams","killRisk":"Pembina/Morgan Stanley/Kineticor + Capital Power are both well-funded infra incumbents with existing AESO relationships. A Diagram NewCo without a senior dev team or Capital Power partnership gets shut out of Round 2.","marginFlag":{"level":"orange","note":"Infra IPP returns: 8-14% ROE unlevered, 15-25% levered. Not software returns. Valuation = Capital Power / Innergex-style multiples, not SaaS."},"previouslyExplored":{"number":46,"name":"Industrial Flexible-Load OS","note":"Diagram opened #46 Industrial Flexible-Load OS in Aug 2026 (SOFTWARE layer for industrial flex) and this Oct card is the ASSET/PHYSICAL complement. Also complements Sep 2026 'Grid-Flexible AI Data Center Software' card (ADVANCE 3.60) \u2014 those are both software; this is the physical BTM. Reviewer decides whether to run as a stack of three or pick one layer."},"scores":{"pain":4,"market":4,"timing":5,"solution":3,"advantage":3,"impact":5,"defensibility":3},"gates":{"market":{"result":"for","note":"$800M-1.3B PPA pool clear"},"timing":{"result":"for","note":"Meta commitment + AESO constraints + Hydro-Qu\u00e9bec rate pressure all land 2026"},"margin":{"result":"conditional","note":"infra ROE not SaaS"},"rightToWin":{"result":"conditional","note":"capital is real; dev team gap"},"killTest":{"result":"against","note":"Pembina + Capital Power have head starts in same geography with same buyer"},"scope":{"result":"for","note":"climate mitigation direct, massive scale"}},"gateVerdict":"ADVANCE \u2014 but the clean path is Capital Power partnership OR Green Data Systems JV. Independent entry fails kill test.","outcome":"advance","id":"behind-the-meter-renewable-dc-infrastructure-developer","rank":2,"weightedScore":3.9},{"name":"Fusion Picks-and-Shovels \u2014 Canadian Supply Chain","oneLiner":"Back Canadian fusion-supply-chain players (plasma diagnostics, HTS magnet, cryogenics) riding the $4.5B/yr private fusion capital flow \u2014 not the reactor itself.","breakInPattern":"unbundle","archetype":"software","category":"Energy / Fusion","country":"Canada","signal":"Daedal Systems (Toronto) raised $4M Seed Oct 2026 led by OMERS Ventures \u2014 standardized plasma diagnostics for fusion reactors. Fusion Industry Association 2026 report: USD 4.48B private investment in 2026 (+69% YoY), USD 14.24B cumulative. Helion closed USD 500M Sep 2026 at USD 15.5B valuation. CFS at USD 4B total.","priorContext":"PRIOR CONTEXT: Sep 2026 TOF run put Fusion as KILL / landscape context \u2014 reactor-side is capital-intensive and studio-wrong-shaped. Oct 2026 Daedal signal reclassifies: picks-and-shovels wedge is distinct from reactor development and may be studio-shaped.","threeClocks":{"enabling":{"rung":true,"evidence":"CFS SPARC + Helion Polaris + 10+ private fusion reactors all moving into integrated-system construction phase 2025-28. Each needs standardized diagnostics, cryogenics, HTS magnet suppliers.","date":"2025-01"},"budget":{"rung":true,"evidence":"FIA 2026 report: 2026 investment USD 4.48B. CFS, Helion, TAE, Zap, et al. have combined USD 10B+ to spend 2025-28. Supplier RFPs active now.","firstPurchaseDate":"2026-Q4"},"competitive":{"status":"open","closingEvent":"Siemens, General Atomics, or a large Chinese plasma-physics supplier establishes a Canadian presence or acquires Daedal.","closingBy":"2028-01"},"verdict":"on-time","datedPrediction":"First multi-reactor supply contract (Daedal to 3+ reactor developers) lands Q4 2026-Q2 2027, because CFS SPARC construction phase + Helion Orion build-out require integrated diagnostics in that window."},"painPoint":"HYPOTHESIS. Segment: 10-15 well-funded fusion reactor developers globally (CFS, Helion, TAE, Zap, Tokamak Energy, Marvel Fusion, Blue Laser, Pacific Fusion, Realta, Thea). Top-3 need: (1) standardized plasma diagnostics across reactor types (today = custom one-off per reactor), (2) deliverable in <18 months (vs 36+ for custom), (3) priced at <$1M per diagnostic suite (vs $5M+ custom). Attempted-solution: Daedal's $4M OMERS raise is the attempted-solution evidence \u2014 someone is paying for standardization.","solution":"Fund Daedal-adjacent Canadian fusion suppliers across diagnostics, cryogenics, HTS magnet manufacturing, and specialized materials. Diagram's role: capital stack + commercial BD orchestration + consolidation thesis (acquire smaller players). Target 3-5 bets totaling USD 20-40M.","marginLayers":[{"layer":"software subscription (diagnostic data platform)","weightPct":40,"note":"recurring data + analysis contracts"},{"layer":"% of transaction (hardware sale)","weightPct":45,"note":"diagnostic suite sale, 30-40% hardware GM"},{"layer":"services attach (install + calibration)","weightPct":15,"note":"integration services"}],"referenceCostBase":"Global fusion private capital flow 2026: USD 4.48B/yr. Supply chain spend = typically 15-25% of reactor project capex.","tamMethodology":[{"method":"benchmark-ACV","arithmetic":"15 reactor developers \u00d7 USD 2-5M/yr diagnostics spend \u00d7 5-yr buildout = USD 150-400M total addressable diagnostics pool. Diagram-backed NewCo captures 20-30% at maturity = USD 30-120M revenue/yr.","sourceComparable":"Daedal pricing bands; General Atomics historical fusion diagnostics contracts","result":"$150-400M TAM"},{"method":"value-based","arithmetic":"Fusion developer capex typically USD 100-300M per SPARC-scale device; 10-15% supply chain spend = USD 10-45M per reactor \u00d7 15 reactors = USD 150-700M total supply chain pool. Diagnostics share ~15% = USD 25-100M.","sourceComparable":"FIA 2026 report; CFS SPARC budget disclosures","result":"$25-100M diagnostics specifically"}],"tamBase":"$150-400M TAM \u2014 selective floor cleared with niche-dominance argument on standardized diagnostics subset.","buyerLevelSanity":"CFS SPARC budget USD 2B+; diagnostics subset USD 20-40M across lifetime. Daedal-at-scale could capture USD 5-10M of that. Per-reactor ACV defensible.","competitors":{"direct":[{"name":"Daedal Systems","founded":"2024","funding":"USD 4M Oct 2026","geography":"Toronto","threat":"HIGH \u2014 exactly this wedge, Canadian anchor"},{"name":"Next Step Fusion","founded":"2022","funding":"undisclosed","geography":"Switzerland","threat":"MED \u2014 same wedge different geo"},{"name":"General Atomics (plasma diagnostics)","founded":"legacy","funding":"parent","geography":"US","threat":"MED \u2014 legacy incumbent, custom one-off model"},{"name":"Fusionality","founded":"2026","funding":"undisclosed","geography":"Switzerland (EPFL spin-out)","threat":"MED"}],"substitutes":[{"name":"In-house custom diagnostics","note":"the actual incumbent \u2014 reactor developer teams build their own, 36+ month cycles"},{"name":"Legacy plasma physics equipment vendors","note":"General Atomics, Hamamatsu \u2014 custom, slow, expensive"}],"adjacentExtenders":[{"name":"Siemens Energy","structuralReasonNotDirect":"Industrial controls + power; fusion is <1% of revenue; extension would require acquisition not organic build."},{"name":"Mitsubishi Heavy","structuralReasonNotDirect":"Large-plant Japanese integrator; focus on nuclear fission, fusion extension slow and capital-intensive."}]},"statusQuo":"Reactor developer in-house custom diagnostics + legacy GA / Hamamatsu vendors \u2014 real incumbent. 36+ month lead times.","climateImpact":"Indirect \u2014 enables fusion commercialization. First commercial fusion plant 2028-30 would displace fossil baseload. Scale-limited impact for 5-10 years.","unfairAdvantage":[{"assetName":"Sagard SPES + venture capital capability + OMERS co-investor appetite","category":"execution","stressTest":{"specific":true,"headStart":"6-9 months on capital stack","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"weak","internalOwner":"SPES VC + Portage Ventures","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"No fusion domain expertise on Diagram team; no reactor-developer relationships (CFS, Helion); no Daedal warm relationship. Thesis requires either (a) acqui-hire fusion physicist, (b) partner-with-OMERS as syndicate, (c) commission a technical advisor. 3-6 months.","graveyard":"~2010-2020: multiple fusion attempts shuttered (Tri Alpha restructured, General Fusion struggling). Picks-and-shovels was negligible then because reactor developers were pre-revenue; both have changed as of 2026 with CFS + Helion scaling.","threeYearCounterfactual":"Could this have been built in 2023? Partially \u2014 fusion private capital was USD 2.6B 2023 vs USD 4.48B 2026. Reactor construction phase hadn't started. Buyer motion was thinner.","keyRisks":[{"type":"condition","subject":"Fusion commercial timeline slips","mechanism":"If CFS SPARC net energy slips past 2028 (currently targeted late 2026), developer capital may freeze and supplier contracts stall.","likelihood":"medium \u2014 complex technical risk","response":"Diversify across reactor developers (not single-reactor dependency); position for 10-yr supply horizon."},{"type":"actor-move","subject":"OMERS doubles down on Daedal","mechanism":"OMERS led Daedal's seed; may lead Series A and foreclose Diagram's position.","likelihood":"medium","response":"Co-invest with OMERS (not compete); use Diagram venture capability as sidecar."},{"type":"condition","subject":"Fusion funding hype vs reality","mechanism":"$4.48B investment is a 69% YoY increase; may compress if 2027 technical milestones disappoint.","likelihood":"medium","response":"Size position smaller; use pick-and-shovels thesis as diversifier not core."},{"type":"actor-move","subject":"Large reactor developer in-sources","mechanism":"CFS or Helion scales to the point they prefer in-house diagnostics teams.","likelihood":"low-medium","response":"Target 3-tier developers (not just CFS/Helion); diagnostics-as-a-service model is more defensible for smaller customers."}],"sourceValidation":{"score":72,"recency":28,"reputability":24,"corroboration":20,"note":"Strong: FIA report + Daedal fundraise + CFS/Helion status. Weak: no primary reactor developer conversation."},"confidence":"3/4 streams","killRisk":"Fusion commercial timeline is still unproven; if 2027-28 milestones slip, supply-chain capex freezes with it.","marginFlag":null,"previouslyExplored":null,"scores":{"pain":3,"market":3,"timing":4,"solution":3,"advantage":2,"impact":4,"defensibility":3},"gates":{"market":{"result":"for","note":"$150-400M TAM clears selective floor"},"timing":{"result":"for","note":"CFS + Helion construction phase + FIA funding growth all 2026"},"margin":{"result":"for","note":"software + hardware blend 50%+"},"rightToWin":{"result":"against","note":"no fusion expertise on team"},"killTest":{"result":"conditional","note":"Daedal + OMERS Ventures already positioned"},"scope":{"result":"for","note":"climate mitigation indirect long-term"}},"gateVerdict":"INVESTIGATE \u2014 book 2 weeks of fusion advisor time + a Daedal/OMERS conversation. Partnership/co-investment is probably the move, not greenfield.","outcome":"investigate","id":"fusion-picks-and-shovels-canadian-supply-chain","rank":3,"weightedScore":3.1},{"name":"Autonomous Electric Off-Road Work Vehicles \u2014 Mining & Forestry","oneLiner":"Build or back electric autonomous off-road work vehicles for Canadian mining and forestry \u2014 using BeOnyx (Saguenay) + Edison Motors (BC) as anchor Canadian supply chain.","breakInPattern":"10x-better","archetype":"physical","category":"Transport / Vocational EVs","country":"Canada","signal":"BeOnyx (Saguenay) raised $5M Seed Round Oct 2026 \u2014 autonomous electric off-road vehicles for rugged field operations. Reinforces Edison Motors (BC, $12M earlier Sep 2026) \u2014 Canadian specialty off-road EV cluster forming distinct from passenger EV market.","priorContext":"PRIOR CONTEXT: Sep 2026 TOF run noted Edison Motors but did not card as separate thesis. BeOnyx Oct signal makes this a distinct wedge: electric autonomous for mining/forestry (not consumer EV).","threeClocks":{"enabling":{"rung":true,"evidence":"Heavy-duty battery pack costs down 40% 2020-26; autonomous navigation stack for structured off-road environments matured 2024-25.","date":"2024-06"},"budget":{"rung":false,"evidence":"Canadian mining fleet replacement cycles 7-10 years; forestry 10-15 years. Current diesel heavy equipment Canadian fleet ~50,000 vehicles. Procurement cycles 18-36 months. First EV procurement cycles only starting 2025-27.","firstPurchaseDate":"2027-Q3"},"competitive":{"status":"open","closingEvent":"Caterpillar, Komatsu, or Volvo CE launches commercial autonomous off-road electric line in Canada; Chinese BYD-adjacent off-road vehicles enter Canadian market.","closingBy":"2028-06"},"verdict":"on-time","datedPrediction":"First Canadian mining/forestry fleet pilot order lands Q3 2027-Q1 2028, because Teck/Vale/CNRL fleet renewal cycles start 2027 budget planning and First Nations electrification funding is unlocking 2026-27."},"painPoint":"HYPOTHESIS. Segment: Canadian mining (Teck, Vale, CNRL, Suncor); forestry (Canfor, West Fraser, Interfor); remote-industrial (Hydro One, BC Hydro, utility ROW maintenance); First Nations-owned infrastructure. Top-3 need: (1) decarbonize Scope 1 diesel emissions, (2) reduce fuel + maintenance costs (diesel heavy equipment ~CAD 0.80/L \u00d7 high consumption), (3) worker safety via autonomy on hazardous terrain. Attempted-solution: Caterpillar electric haul trucks pilot at Teck (BC); Suncor autonomous diesel haulers \u2014 attempted but incomplete.","solution":"Vertical-specific electric autonomous OEM: 20-80 tonne class heavy equipment, built for mining/forestry duty cycles. Sell as fleet-as-a-service (uptime guarantee + maintenance contract) rather than hardware. Partner with BeOnyx (autonomy platform) + Edison (powertrain) to accelerate product.","marginLayers":[{"layer":"% of transaction (equipment lease)","weightPct":55,"note":"fleet-as-service, 5-7yr lease + maintenance"},{"layer":"software subscription (fleet mgmt)","weightPct":25,"note":"operations platform SaaS"},{"layer":"services attach (maintenance)","weightPct":20,"note":"recurring service revenue, 15-20% margin"}],"referenceCostBase":"Canadian mining + forestry heavy equipment fleet: 50,000 vehicles \u00d7 CAD 500k avg = CAD 25B asset base; CAD 2-3B/yr replacement cycle; CAD 1B/yr fuel + maintenance opex (industry estimates).","tamMethodology":[{"method":"outsourced-function-replacement","arithmetic":"Canadian mining + forestry EV-addressable fleet renewal 2027-30: ~15% of fleet \u00d7 CAD 500k avg \u00d7 1.5\u00d7 EV premium = CAD 5.6B total addressable 4-year. Diagram NewCo captures 5-10% at maturity = CAD 300-600M revenue over 4 yrs.","sourceComparable":"Caterpillar earnings disclosures; MISA Canadian mining supplier market data","result":"$500M-1B 4-yr pool"},{"method":"value-based","arithmetic":"CAD 1B/yr Canadian off-road fuel + maintenance opex \u00d7 20% EV-addressable segment = CAD 200M/yr savings pool. 30-40% customer-retained = CAD 100M/yr customer value. NewCo captures 15-25% as fleet-as-service = CAD 25-50M ARR.","sourceComparable":"MISA + CMIC industrial fuel data","result":"$25-50M ARR mature"}],"tamBase":"$500M-1B 4-yr pool \u2014 selective floor cleared with niche-dominance argument on Canadian mining/forestry.","buyerLevelSanity":"Teck Canadian operations have ~300 heavy haul trucks; replacing 20% at CAD 800k EV premium \u00d7 60 trucks = CAD 48M order. One large customer / 4-yr order defensible.","competitors":{"direct":[{"name":"BeOnyx","founded":"~2023","funding":"USD 5M Oct 2026","geography":"Saguenay QC","threat":"HIGH \u2014 Canadian anchor, direct geo match"},{"name":"Edison Motors (BC)","founded":"~2020","funding":"USD 12M","geography":"Merritt BC","threat":"MED \u2014 focused on hybrid trucks, not autonomous"},{"name":"Caterpillar electric line","founded":"legacy","funding":"public","geography":"Global","threat":"HIGH \u2014 massive incumbent, Canadian footprint"},{"name":"Komatsu electric","founded":"legacy","funding":"public","geography":"Global","threat":"HIGH"}],"substitutes":[{"name":"Diesel heavy equipment","note":"the actual incumbent \u2014 95%+ of Canadian mining/forestry fleet"},{"name":"Diesel-electric hybrid","note":"Caterpillar/Komatsu transition tech"}],"adjacentExtenders":[{"name":"Finning (Caterpillar dealer Canada)","structuralReasonNotDirect":"Dealer business \u2014 distribution not manufacturing. Could partner but not build."},{"name":"Toromont (CAT dealer ON/QC)","structuralReasonNotDirect":"Same as Finning \u2014 distribution not OEM."}]},"statusQuo":"Diesel heavy equipment + Caterpillar/Komatsu/Volvo CE dealer network \u2014 real incumbent. 95%+ of Canadian off-road fleet.","climateImpact":"Direct \u2014 diesel off-road fleet produces ~5-7 Mt CO2/yr in Canada (NRCan diesel + off-road breakdown). 20% EV penetration = 1 Mt CO2/yr avoided.","unfairAdvantage":[{"assetName":"BeOnyx + Edison Motors as potential JV / acqui-hire targets","category":"execution","stressTest":{"specific":true,"headStart":"18-24 months of OEM team building saved","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"no","internalOwner":"none","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}},{"assetName":"Sagard Quebec industrial relationships + Investissement Qu\u00e9bec packaging capability","category":"credibility","stressTest":{"specific":false,"headStart":"6-9 months on capital","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"weak","internalOwner":"Cap Form Montreal + SPES","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"No off-road OEM team; no mining/forestry enterprise relationships (Teck, Canfor, Suncor); no autonomy stack. All three gaps are serious. Catching up means consolidation thesis (acquire BeOnyx + Edison + hire from Finning/Toromont dealer network) OR greenfield with 24+ month runway.","graveyard":"~2015-2022: Nikola Motors (US) collapsed on BEV truck claims; Hyliion (US) pivoted. Cause of death: unit economics of heavy-duty EV manufacturing + no fleet customer at scale. Partially changed: Teck/Vale/CNRL now have internal fleet-decarb KPIs; First Nations capital unlocked.","threeYearCounterfactual":"Could this have been built in 2023? Partially \u2014 battery costs were higher, autonomy stack less mature. 2024-26 is the real enabling window.","keyRisks":[{"type":"actor-move","subject":"Caterpillar accelerates","mechanism":"CAT has publicly announced electric mining line; will target Teck/Vale 2027-28. Resource advantage overwhelming.","likelihood":"high \u2014 explicitly stated CAT strategy","response":"Position on autonomy + Canadian content + mid-size equipment class where CAT focus is thinner. Partner with Finning/Toromont for distribution."},{"type":"condition","subject":"Mining/forestry capital cycles","mechanism":"Commodity prices drive fleet renewal. Nickel down 50% 2024-25; forestry under US tariff pressure 2026.","likelihood":"high \u2014 cyclical","response":"Design business to work in commodity-down environment via fleet-as-service (not capex sale)."},{"type":"actor-move","subject":"BeOnyx/Edison prefer solo","mechanism":"May prefer VC equity + solo scale rather than Diagram JV / consolidation.","likelihood":"medium","response":"Early conversation to establish shape before Series A commits paths."},{"type":"condition","subject":"Autonomy regulation on off-road","mechanism":"Transport Canada + provincial mining safety regulators have not published clear autonomous-vehicle frameworks for off-road.","likelihood":"medium","response":"Prioritize mining pit (private site, less regulated) over forestry/public ROW."}],"sourceValidation":{"score":70,"recency":28,"reputability":22,"corroboration":20,"note":"Strong: BeOnyx + Edison deal data. Weak: no primary mining customer conversation."},"confidence":"3/4 streams","killRisk":"Caterpillar + Komatsu are vastly resource-advantaged incumbents; Diagram-sized play likely gets squeezed unless autonomy is the real differentiator.","marginFlag":{"level":"orange","note":"Physical heavy equipment + services \u2014 15-25% GM at best. Not software returns. Fleet-as-service structure can lift blended margin to 25-35% at scale."},"previouslyExplored":{"number":15,"name":"Lyteflo","note":"Diagram has active Lyteflo (#15) EV Solutions-as-a-Service exploration. Lyteflo is passenger/light-duty focused; this card is heavy-duty off-road. Different wedge but reviewer should surface the connection."},"scores":{"pain":3,"market":3,"timing":3,"solution":3,"advantage":2,"impact":4,"defensibility":3},"gates":{"market":{"result":"for","note":"$500M-1B 4-yr pool clears floor"},"timing":{"result":"conditional","note":"budget cycles still early, 2027-28 realistic"},"margin":{"result":"against","note":"physical GM 15-25%, not software"},"rightToWin":{"result":"against","note":"no OEM team, no customer relationships"},"killTest":{"result":"against","note":"Caterpillar + Komatsu are too resource-advantaged"},"scope":{"result":"for","note":"climate mitigation direct"}},"gateVerdict":"INVESTIGATE \u2014 not an ADVANCE because CAT/Komatsu scale + capital intensity. Potential path = BeOnyx + Edison consolidation into mid-size autonomous vocational EV play. 3-week assessment.","outcome":"investigate","id":"autonomous-electric-off-road-work-vehicles-mining-forestry","rank":4,"weightedScore":2.95},{"name":"Next-Generation Biological Crop Protection \u2014 mRNA / RNAi","oneLiner":"Fund mRNA/RNAi-based biopesticide development (Molagri + others) riding the global pest-resistance crisis \u2014 a resistance-free, species-specific approach to crop protection.","breakInPattern":"10x-better","archetype":"tech-enabled-service","category":"Agriculture / Biopesticide","country":"Canada","signal":"Molagri (Toronto) raised $5.8M Oct 14 2026 for mRNA-delivery via virus-like particles for species-specific pest control. EPA first RNAi (Calantha / Greenlight Biosciences) approved 2023 reevaluates 2026. China ICAMA RNAi registration public consultation Apr 2026. Pest resistance drives $65B global pesticide market pain.","priorContext":"PRIOR CONTEXT: biopesticide category well-known since 1990s (Bt, baculovirus); RNAi commercialization slow 2010-2020. Fresh Oct 2026 search: regulatory motion in US (reevaluation) + China (first approval public consult) + Molagri Canadian anchor signals next generation taking hold.","threeClocks":{"enabling":{"rung":true,"evidence":"RNAi delivery mechanisms via dsRNA (Greenlight / Syngenta) commercialized 2023; mRNA + VLP delivery (Molagri) emerging 2026.","date":"2024-01"},"budget":{"rung":true,"evidence":"Global pesticide market USD 65B/yr. Pest resistance costs farmers $1-2B/yr in reduced yield + rotation costs (USDA). Buyers (ag distributors, growers) actively procuring new modes-of-action.","firstPurchaseDate":"2027-Q4"},"competitive":{"status":"open","closingEvent":"Bayer, Syngenta, or Corteva acquires a scaled RNAi/mRNA biopesticide player; FMC extends.","closingBy":"2028-06"},"verdict":"on-time","datedPrediction":"First commercial Canadian / US biopesticide registration (post-Molagri) lands Q4 2027-Q2 2028, because EPA / PMRA registration cycles take 18-30 months from field trial start."},"painPoint":"HYPOTHESIS. Segment: Canadian + US corn, soy, canola, potato growers; Canadian ag distributors (Nutrien, Richardson, Cargill, FCA). Top-3 need: (1) new modes-of-action for resistance management (SCN resistant to Bt, aphid resistance to neonics), (2) species-specific products that spare pollinators, (3) meet retailer/CPG sustainability targets. Attempted-solution: Greenlight Biosciences first RNAi registered 2023; Micropep peptide biochemicals; Molagri's $5.8M = latest attempted solution.","solution":"Partner-with-Molagri + fund 1-2 adjacent biopesticide developers (mRNA, peptide, microbial) for Canadian prairie + specialty crop markets. Diagram's role: capital stack + commercial BD with Nutrien/Richardson + regulatory strategy. Not the lab.","marginLayers":[{"layer":"% of transaction (product sale)","weightPct":70,"note":"recurring season sales to distributors / growers"},{"layer":"IP licensing","weightPct":20,"note":"geographic / crop licensing to ag majors"},{"layer":"services attach (field trials, agronomy)","weightPct":10,"note":"supporting services"}],"referenceCostBase":"Global pesticide market USD 65B/yr (AgRevolution 2024). Canadian pesticide market CAD 4-5B/yr (CropLife Canada).","tamMethodology":[{"method":"outsourced-function-replacement","arithmetic":"Global biopesticide subset USD 10-14B by 2030 (BCC Research), growing 15% CAGR. mRNA/RNAi subset 10-20% = USD 1-3B. Diagram-backed NewCo captures 1-3% at maturity = USD 10-90M revenue.","sourceComparable":"BCC Research biopesticide 2024; Greenlight / Micropep pricing bands","result":"$1-3B TAM mRNA/RNAi"},{"method":"value-based","arithmetic":"Canadian crop protection market CAD 4-5B \u00d7 10% biopesticide \u00d7 new-mode-of-action 20% = CAD 80-100M/yr addressable Canada. 10-20% market share = CAD 8-20M.","sourceComparable":"CropLife Canada market data; USDA ERS pesticide expenditure","result":"$8-20M CAD ARR Canada"}],"tamBase":"$1-3B global TAM for mRNA/RNAi segment \u2014 selective floor cleared with niche-dominance argument on next-gen biopesticide subset.","buyerLevelSanity":"Canadian canola grower (Nutrien customer, 2000 ha) spends CAD 50-80k/yr on crop protection. Molagri product at CAD 25-40/ha = CAD 50-80k/yr addressable per large grower. Reasonable per-customer.","competitors":{"direct":[{"name":"Greenlight Biosciences (Syngenta subsidiary)","founded":"2008","funding":"USD 300M+ pre-acq","geography":"US","threat":"HIGH \u2014 RNAi incumbent, acquired by Syngenta"},{"name":"Molagri","founded":"2024","funding":"USD 5.8M Oct 2026","geography":"Toronto","threat":"HIGH \u2014 exactly the wedge, Canadian anchor"},{"name":"Micropep (France)","founded":"2016","funding":"EUR 25M","geography":"EU","threat":"MED \u2014 peptide not RNAi"},{"name":"Flagship Pioneering biopesticide portfolio","founded":"legacy","funding":"parent","geography":"US","threat":"MED \u2014 well-funded ag biotech incubator"}],"substitutes":[{"name":"Chemical pesticides (neonics, pyrethroids)","note":"the actual incumbent \u2014 90% of market"},{"name":"Microbial biopesticides (Bt, baculovirus)","note":"established alternative, limited to specific pest classes"}],"adjacentExtenders":[{"name":"Bayer, Syngenta, Corteva, FMC","structuralReasonNotDirect":"Chemical pesticide incumbents with distribution. Will acquire scaled winners rather than build (Syngenta's Greenlight acquisition pattern)."}]},"statusQuo":"Chemical pesticides via Nutrien/Richardson/Corteva channel + microbial Bt \u2014 real incumbent for 95%+ of Canadian crop protection.","climateImpact":"Indirect \u2014 reduced chemical pesticide use = less water contamination + pollinator protection. Climate link weaker than carbon-focused cards.","unfairAdvantage":[{"assetName":"Portage FinTech / agtech exposure + Sagard CAD venture capability","category":"execution","stressTest":{"specific":false,"headStart":"3-6 months on capital","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"weak","internalOwner":"Portage Ventures","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"No ag biotech expertise; no distribution relationships (Nutrien, Richardson); no PMRA regulatory experience. All material gaps. Building thesis means (a) partner-with / co-invest-in Molagri as lead investor path, (b) hire ag biotech advisor, (c) regulatory strategy consulting.","graveyard":"~2010-2020: Pasteuria Bioscience, Marrone Bio Innovations struggles. Cause of death: biopesticide efficacy vs chemical gap; distribution incumbent lock-in. Partially changed: resistance drives distributor interest; EPA Emerging Tech branch accelerated review.","threeYearCounterfactual":"Could this have been built in 2023? Partially \u2014 Greenlight commercialized RNAi 2023. Molagri's mRNA+VLP approach is 2024-26 generation. 2026 is the earliest for the next-gen wedge.","keyRisks":[{"type":"actor-move","subject":"Syngenta/Bayer acquires","mechanism":"Chemical majors have 10x the capital. Follow the Greenlight pattern: let the biologic company commercialize then acquire.","likelihood":"high","response":"Position for strategic exit on acquisition path, not independent scale."},{"type":"condition","subject":"EPA/PMRA regulatory speed","mechanism":"RNAi + mRNA biopesticides are novel categories; registration timelines uncertain (3-5 yrs for first products in each class).","likelihood":"high","response":"Diversify portfolio across modes-of-action; don't bet on single-regulatory-path."},{"type":"actor-move","subject":"Nutrien bundles","mechanism":"Nutrien (world's largest ag input distributor) may bundle Molagri competitor product + undercut.","likelihood":"medium","response":"Early distributor partnership vs competition posture."},{"type":"condition","subject":"Grower adoption","mechanism":"Growers slow to adopt new modes-of-action; need 3-5 yr efficacy data before switching from neonics.","likelihood":"high","response":"Fund multi-year field trials; align with university extension services."}],"sourceValidation":{"score":70,"recency":28,"reputability":24,"corroboration":18,"note":"Strong: Molagri + EPA/China regulatory. Weak: no primary distributor conversation."},"confidence":"3/4 streams","killRisk":"Chemical majors (Syngenta/Bayer/Corteva) will acquire winners; independent long-term scale is unlikely. Thesis must align with acquisition path.","marginFlag":null,"previouslyExplored":{"number":11,"name":"ARGO","note":"Diagram has active ARGO (#11) Agronomist Co-Pilot. Software/data layer not biopesticide product; different wedge but adjacent agtech space. Reviewer decides how to relate."},"scores":{"pain":3,"market":3,"timing":4,"solution":3,"advantage":2,"impact":3,"defensibility":3},"gates":{"market":{"result":"for","note":"$1-3B TAM clears floor"},"timing":{"result":"for","note":"EPA + China + Molagri signal 2026"},"margin":{"result":"for","note":"product sales + licensing"},"rightToWin":{"result":"against","note":"no biotech / regulatory team"},"killTest":{"result":"against","note":"Syngenta/Greenlight established + will acquire competitors"},"scope":{"result":"conditional","note":"environmental benefit indirect"}},"gateVerdict":"INVESTIGATE \u2014 co-invest with Molagri lead rather than build. 2-week agtech advisor sprint.","outcome":"investigate","id":"next-generation-biological-crop-protection-mrna-rnai","rank":5,"weightedScore":3.0},{"name":"Climate Risk Decision Platform for Canadian Municipalities","oneLiner":"Scale precision climate-risk decision software (Traverse Analytics anchor) for Canadian municipalities + utilities + insurers facing wildfire, flood, and extreme-weather compound risk.","breakInPattern":"fill-a-gap","archetype":"software","category":"Climate Adaptation / Analytics","country":"Canada","signal":"Traverse Analytics (Calgary) raised $1.1M Seed Round Oct 2026 for precision risk informed decision-making tool. Canadian wildfire + flood losses hit record CAD 1.1B 2024; municipal procurement for climate adaptation accelerating.","priorContext":"PRIOR CONTEXT: Sep 2026 TOF run surfaced climate adaptation theme via wildfire cards (Lightning-Ignition #2, Drone Swarm #3). Climate risk analytics was a dormant cluster then (n=3 global). Oct Traverse signal reactivates it with Canadian anchor.","threeClocks":{"enabling":{"rung":true,"evidence":"ML-based climate downscaling at property/asset resolution matured 2024-25; integration with public hazard data (NRCan flood, BC MFLNRO wildfire) streamlined 2026.","date":"2024-06"},"budget":{"rung":true,"evidence":"Canadian municipal climate adaptation funding: FCM Green Municipal Fund CAD 1.6B through 2028; provincial resilience programs. Canadian P&C insurer climate-risk spend ~CAD 100M/yr (IBC estimates).","firstPurchaseDate":"2026-Q4"},"competitive":{"status":"open","closingEvent":"Jupiter Intelligence, One Concern, or Previse establishes Canadian presence.","closingBy":"2028-01"},"verdict":"on-time","datedPrediction":"First municipal / utility enterprise contract lands Q4 2026-Q2 2027, because 2026 wildfire season loss data (closes Feb-Mar 2027) + 2027 municipal budget planning cycle align."},"painPoint":"HYPOTHESIS. Segment: Canadian municipalities (Calgary, Edmonton, Vancouver, Kelowna, Toronto suburban growth); utilities (Hydro One, BC Hydro, Alberta transmission); P&C insurers (Intact, Desjardins, Co-operators); First Nations infrastructure. Top-3 need: (1) property-level risk assessment for infrastructure capital planning, (2) actuarially-defensible climate risk data for insurance pricing, (3) emergency response + resource allocation. Attempted-solution: Jupiter Intelligence consulting engagements with Canadian utilities (BC Hydro); municipal climate adaptation plans (Toronto, Vancouver have paid consultants).","solution":"Canadian-native climate-risk SaaS for muni + utility + insurer customers. Integrates Canadian public data (NRCan, ECCC, provincial), provincial regulatory requirements, and First Nations/Indigenous land-rights data. Priced by assets-under-coverage or property count.","marginLayers":[{"layer":"software subscription","weightPct":80,"note":"per-customer SaaS, CAD 50-500k/yr by customer size"},{"layer":"data licensing","weightPct":15,"note":"derived risk data sold to reinsurers, mortgage lenders"},{"layer":"services attach","weightPct":5,"note":"onboarding and custom analytics"}],"referenceCostBase":"Canadian municipal climate adaptation spend ~CAD 300-500M/yr (FCM data); P&C insurer analytics spend ~CAD 50-100M/yr; utility climate risk ~CAD 100-200M/yr. CONTEXT.","tamMethodology":[{"method":"benchmark-ACV","arithmetic":"Jupiter Intelligence enterprise ACV USD 200-800k. Canadian addressable: ~300 municipalities >50k population + 10 utilities + 20 insurers = 330 enterprise accounts \u00d7 USD 100-300k ACV = USD 33-100M ACV pool.","sourceComparable":"Jupiter Intelligence private pricing bands; One Concern enterprise disclosures","result":"$33-100M ACV pool CAD"},{"method":"value-based","arithmetic":"Canadian wildfire + flood cat losses CAD 1.1B/yr; 5% reduction via better decision-support = CAD 55M/yr value. 10% software take rate = CAD 5.5M ARR Canada. Expand with insurer + reinsurer = CAD 20-50M.","sourceComparable":"IBC Cat loss report 2024; FEMA/CalFire adaptation cost-benefit","result":"$20-50M CAD ARR"}],"tamBase":"$33-100M ACV pool \u2014 below $1.5B playbook floor. 'Below floor \u2014 selective' with niche-dominance argument.","buyerLevelSanity":"City of Calgary (CAD 400M/yr infrastructure capex) \u00d7 0.1% risk analytics = CAD 400k ACV. Reasonable per mid-size muni.","competitors":{"direct":[{"name":"Traverse Analytics","founded":"~2024","funding":"CAD 1.1M Seed Oct 2026","geography":"Calgary","threat":"HIGH \u2014 Canadian anchor same wedge"},{"name":"Jupiter Intelligence (US)","founded":"2017","funding":"USD 100M+","geography":"US-first","threat":"HIGH \u2014 scaled, named Canadian consulting engagements"},{"name":"One Concern (US)","founded":"2015","funding":"USD 100M+","geography":"US","threat":"MED \u2014 focus on seismic + flood"},{"name":"Climate X (UK)","founded":"2020","funding":"EUR 15M","geography":"EU","threat":"MED"}],"substitutes":[{"name":"External consulting (WSP, Stantec, Dillon Consulting)","note":"the actual incumbent \u2014 one-off reports, not continuous"},{"name":"In-house municipal planning + public hazard maps","note":"low-fidelity, not actionable at property level"}],"adjacentExtenders":[{"name":"ESRI (ArcGIS)","structuralReasonNotDirect":"GIS platform, not climate-risk analytics; extension requires domain data + model build."},{"name":"Insurance incumbents (CoreLogic Canada, Verisk)","structuralReasonNotDirect":"US-first; Canadian expansion requires data assembly."}]},"statusQuo":"External consulting + municipal in-house + public hazard maps \u2014 real incumbent for 90%+ of Canadian climate risk work.","climateImpact":"Direct \u2014 better adaptation decisions reduce physical loss + enable targeted resilience investment.","unfairAdvantage":[{"assetName":"Sagard infrastructure portfolio + Canadian municipal / utility relationships via SPES energy","category":"distribution","stressTest":{"specific":true,"headStart":"6-9 months on muni/utility BD","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"weak","internalOwner":"SPES energy","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"No muni/utility enterprise BD team; no Traverse warm relationship; no climate science advisor. Building this means (a) co-invest with Traverse lead investor, (b) hire from Jupiter / Stantec climate practice, (c) partner on muni distribution.","graveyard":"~2015-2022: numerous climate-risk analytics startups (RMS Climate, HazardHub, Fathom). Cause of death: slow enterprise sales + municipal procurement + insurance incumbent lock-in. Partially changed: 2024-26 cat losses forced buyer action.","threeYearCounterfactual":"Could this have been built in 2023? Partially \u2014 technology existed. Buyer motion was earlier-stage; Traverse Seed is 2026. If yes-partially per doctrine, outcome cannot be ADVANCE.","keyRisks":[{"type":"actor-move","subject":"Jupiter Intelligence enters Canada","mechanism":"Jupiter has consulting engagements already; may open Canadian office or acquire Traverse.","likelihood":"medium","response":"Position on Canadian data advantage (NRCan, provincial, First Nations) that Jupiter cannot easily replicate."},{"type":"condition","subject":"Canadian municipal procurement","mechanism":"Municipal procurement cycles 12-24 months; low-price competition against Stantec consulting.","likelihood":"high","response":"Target growing-municipality segment (Calgary, Kelowna, Barrie) first where capacity is thin; expand to large metros second."},{"type":"actor-move","subject":"Insurer in-house build","mechanism":"Intact or Co-operators may build in-house climate-risk vs buy from external.","likelihood":"medium","response":"Offer whitelabel/API option; capture insurer customers at API price point not full enterprise."},{"type":"condition","subject":"Climate adaptation funding stability","mechanism":"FCM Green Municipal Fund renewal + provincial resilience programs politically dependent.","likelihood":"medium","response":"Diversify beyond public-sector dependent customers to insurer + lender base."}],"sourceValidation":{"score":68,"recency":26,"reputability":22,"corroboration":20,"note":"Weak: no primary muni conversation; limited public ACV benchmarks."},"confidence":"3/4 streams","killRisk":"Jupiter + consulting incumbents will squeeze; TAM is below playbook floor; studio-scale enterprise sales difficult.","marginFlag":null,"previouslyExplored":{"number":16,"name":"Satellite-Based Insights","note":"Diagram has #16 Satellite-Based Insights (active) \u2014 adjacent remote-sensing / analytics space. Reviewer decides whether to fold or run as distinct track."},"scores":{"pain":3,"market":2,"timing":3,"solution":3,"advantage":2,"impact":4,"defensibility":3},"gates":{"market":{"result":"against","note":"$33-100M below $1.5B floor; selective niche-dominance"},"timing":{"result":"for","note":"Traverse + 2024-26 cat losses driving buyer motion"},"margin":{"result":"for","note":"software subscription heavy"},"rightToWin":{"result":"against","note":"no muni enterprise team"},"killTest":{"result":"against","note":"Jupiter + Traverse both ahead"},"scope":{"result":"for","note":"climate adaptation direct"}},"gateVerdict":"INVESTIGATE \u2014 co-investment with Traverse rather than greenfield; validate muni buyer motion with 2-3 conversations.","outcome":"investigate","id":"climate-risk-decision-platform-for-canadian-municipalities","rank":6,"weightedScore":2.75},{"name":"Waste-Feedstock Biomaterials for Packaging Replacement","oneLiner":"Fund waste-biomass \u2192 biomaterial converters (Tydra Labs, Launch Bioindustries) replacing single-use plastics in food packaging and consumer goods.","breakInPattern":"unbundle","archetype":"physical","category":"Circular / Biomaterials","country":"Canada","signal":"Tydra Labs (Vancouver) raised full $1.7M Seed Oct 2026 (progression from Sep $1.1M Pre-Seed) \u2014 shell waste to biomaterials. Launch Bioindustries (Mississauga) raised $650k Accelerator Oct 2026 \u2014 sustainable biomaterials. Two Canadian anchors in a cluster of 6 (0 US, 0 China).","priorContext":"PRIOR CONTEXT: Sep 2026 TOF run noted bioplastics_biomaterials cluster at n=13 with 1 Canadian (Tydra Pre-Seed). Oct refresh: Tydra progressed to full Seed + Launch Bioindustries emerged = Canadian anchor pair, globally underfunded cluster.","threeClocks":{"enabling":{"rung":true,"evidence":"Enzymatic / fermentation-based biomaterial manufacturing costs down 50% 2020-26. EU single-use plastic directive 2024-26 + Canada single-use plastic regulations driving demand.","date":"2024-01"},"budget":{"rung":true,"evidence":"CPG + food packaging buyers (Loblaw, Metro, Saputo, Nestle Canada) targeting 25-50% recycled or bio-content by 2030. Canadian Federal single-use plastic prohibition active 2024.","firstPurchaseDate":"2027-Q2"},"competitive":{"status":"open","closingEvent":"US (Carbios, Danimer) or EU (Bioplastics Europe) scaled player wins Canadian CPG offtake.","closingBy":"2028-01"},"verdict":"on-time","datedPrediction":"First Canadian CPG offtake lands Q2-Q4 2027, because retailer-side bio-content commitments (Loblaw, Metro 2027-28) will require Canadian supply by then."},"painPoint":"HYPOTHESIS. Segment: Canadian + NA CPG packaging buyers (Loblaw, Metro, Saputo, Nestle Canada, Costco Canada); food packaging converters (Winpak, Transcontinental Flexible, CKF Inc). Top-3 need: (1) replace single-use plastic to meet federal prohibition + 2030 CPG commitments, (2) qualify under EU PPWR 2024 for exports, (3) cost-competitive with PET at CAD 1-2/kg. Attempted-solution: PLA (NatureWorks), PHA (Danimer) have failed economic cross-over; Tydra's chitin-based + Launch's novel feedstock = next-gen attempt.","solution":"Fund 2-3 Canadian biomaterial startups focused on waste feedstock conversion. Diagram's role: capital + CPG BD orchestration + regulatory strategy (Health Canada food contact approval). Consolidation thesis if successful.","marginLayers":[{"layer":"% of transaction (material sale)","weightPct":80,"note":"premium biomaterial sold to converters at CAD 3-6/kg vs PET CAD 1-2/kg"},{"layer":"IP licensing","weightPct":15,"note":"geographic/application licensing"},{"layer":"services attach","weightPct":5,"note":"CPG integration services"}],"referenceCostBase":"Canadian flexible packaging market ~CAD 5B/yr (industry estimates); plastic food packaging subset ~CAD 2-3B/yr. CONTEXT.","tamMethodology":[{"method":"outsourced-function-replacement","arithmetic":"Canadian flexible packaging CAD 5B/yr \u00d7 10% addressable bio-content \u00d7 2\u00d7 bio premium = CAD 1B/yr addressable at maturity. 2-5% penetration = CAD 20-50M/yr biomaterial revenue.","sourceComparable":"CKF Inc + Winpak revenue disclosures; EU PPWR biomaterials forecasts","result":"$20-100M CAD revenue mature"},{"method":"value-based","arithmetic":"EU PPWR + Canadian single-use prohibition creates CAD 300M/yr Canadian regulatory-driven demand by 2030. 10% capture = CAD 30M.","sourceComparable":"PPWR impact assessment; ECCC single-use plastic ban","result":"$30-50M CAD"}],"tamBase":"$20-100M CAD \u2014 below $1.5B playbook floor. 'Below floor \u2014 selective' with niche-dominance on Canadian regulatory-driven CPG segment.","buyerLevelSanity":"Loblaw store-brand private label packaging spend CAD 50-100M/yr; 5% biomaterial = CAD 2.5-5M offtake. Multiple retailers = CAD 10-20M ARR achievable.","competitors":{"direct":[{"name":"Tydra Labs (BC)","founded":"~2023","funding":"USD 1.7M","geography":"Vancouver","threat":"HIGH \u2014 Canadian anchor"},{"name":"Launch Bioindustries (ON)","founded":"~2024","funding":"USD 650k","geography":"Mississauga","threat":"MED \u2014 early-stage"},{"name":"Danimer Scientific (US)","founded":"2004","funding":"public, distressed","geography":"US","threat":"LOW \u2014 restructuring post-SPAC"},{"name":"Carbios (France)","founded":"2011","funding":"EUR 100M+","geography":"EU","threat":"MED"},{"name":"NatureWorks (US)","founded":"2001","funding":"Cargill JV","geography":"US","threat":"MED \u2014 PLA incumbent"}],"substitutes":[{"name":"PET + fossil-based plastics","note":"the actual incumbent \u2014 95%+ of food packaging"},{"name":"Molded fiber (CKF, Rotuba)","note":"existing low-cost alternative for some applications"},{"name":"Recycled PET","note":"regulatory-preferred alternative, competing bio-content"}],"adjacentExtenders":[{"name":"Winpak, Transcontinental Flexible","structuralReasonNotDirect":"Converter / packaging manufacturer, not material producer. Could partner but not build material."},{"name":"Cascades","structuralReasonNotDirect":"Pulp + paper + packaging; could invest in biomaterial but not core thesis."}]},"statusQuo":"PET + fossil-based plastics via converters \u2014 real incumbent. 95%+ of Canadian food packaging today.","climateImpact":"Direct \u2014 biomaterial replacement reduces plastic waste + enables bio-circularity. Scope depends on feedstock (regenerative vs waste).","unfairAdvantage":[{"assetName":"Portage AgTech / consumer brand exposure + Sagard CAD venture capability","category":"execution","stressTest":{"specific":false,"headStart":"3-6 months","exclusive":false,"relevant":true},"affinityCheck":{"primaryRelationship":"weak","internalOwner":"Portage Ventures","lastContactDate":"none logged","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"No material science team; no CPG offtake relationships (Loblaw, Metro); no Health Canada food contact approval expertise. All material gaps.","graveyard":"~2010-2024: NatureWorks (slow commercial PLA, remains sub-scale after 20+ yrs); Danimer Scientific (SPAC \u2192 distressed 2024); PlantBottle (Coca-Cola abandoned 2020). Cause of death: unit economics never crossed PET cost + inconsistent regulatory tailwinds. Partially changed: Canadian + EU prohibition + CPG public commitments 2024-26.","threeYearCounterfactual":"Could this have been built in 2023? Partially \u2014 the companies existed. Canadian single-use plastic ban was recent (2024). Tydra Pre-Seed was Dec 2023.","keyRisks":[{"type":"condition","subject":"PET pricing + recycling scale","mechanism":"If recycled PET scales via Canadian deposit-return + CPG recycled-content commitments, biomaterial loses regulatory wedge.","likelihood":"medium","response":"Target applications where recycled PET fails (food-contact high-barrier packaging, color-sensitive)."},{"type":"actor-move","subject":"CPG majors acquire scaled player","mechanism":"Loblaw, Nestle, Coca-Cola historically acquire biomaterial winners (Coca-Cola / PlantBottle pattern).","likelihood":"medium","response":"Position for strategic exit path."},{"type":"condition","subject":"Regulatory enforcement","mechanism":"Canadian single-use prohibition weakly enforced; EU PPWR implementation uncertain.","likelihood":"medium-high","response":"Diversify beyond regulatory-dependent demand to voluntary CPG commitments."},{"type":"condition","subject":"Feedstock supply","mechanism":"Shell waste + agricultural residue supply chains fragile; may constrain scale.","likelihood":"medium","response":"Diversify feedstock sources early."}],"sourceValidation":{"score":66,"recency":26,"reputability":22,"corroboration":18,"note":"Strong: Canadian single-use plastic ban + Tydra + Launch deal data. Weak: no CPG buyer conversation."},"confidence":"2/4 streams","killRisk":"Biomaterial economics have failed historically; CPG offtake fragile; scale pathway unclear even with regulatory push.","marginFlag":{"level":"orange","note":"Physical material production \u2014 20-35% GM at plant level. Not software returns. Needs CAD 20-50M capex per scaled plant."},"previouslyExplored":null,"scores":{"pain":3,"market":2,"timing":3,"solution":3,"advantage":2,"impact":4,"defensibility":3},"gates":{"market":{"result":"against","note":"below floor"},"timing":{"result":"for","note":"regulatory + Canadian anchor pair"},"margin":{"result":"conditional","note":"physical plant GM 20-35%"},"rightToWin":{"result":"against","note":"no material science team"},"killTest":{"result":"conditional","note":"Danimer collapsed, NatureWorks sub-scale, Canadian anchors early"},"scope":{"result":"for","note":"circular economy + plastic reduction"}},"gateVerdict":"INVESTIGATE \u2014 small-check co-invest in Tydra Series A if offered; monitor Launch progression. No greenfield.","outcome":"investigate","id":"waste-feedstock-biomaterials-for-packaging-replacement","rank":7,"weightedScore":2.75},{"name":"AI Chip / Semiconductor Supply Chain \u2014 Landscape Context","oneLiner":"Largest Oct 2026 funding cluster (22 companies, USD 1B+). Retained as landscape context per full-retention \u2014 not a Diagram-shaped opportunity.","breakInPattern":"custom: retained as landscape context","archetype":"physical","category":"Compute / Chips","country":"Global","signal":"22 companies in Oct 2026 extract across semiconductors / AI chips / photonics (LanXin Computing CN $298M, Vinci $250M, Euclyd NL $230M). Zero Canadian anchors.","priorContext":"PRIOR CONTEXT: AI chip cluster was the largest Oct cluster (22 companies vs climate-thesis clusters at 5-11). Capital intensity + US/China/NL dominance + no Canadian ecosystem = clear out-of-scope for Diagram.","threeClocks":{"enabling":{"rung":true,"evidence":"Fab + photonic process maturation continuous.","date":"2024-01"},"budget":{"rung":true,"evidence":"AI capex cycle USD 400B+ 2026E.","firstPurchaseDate":"ongoing"},"competitive":{"status":"closed","closingEvent":"Fabless + fab incumbents (NVIDIA, AMD, TSMC, SK Hynix) dominate; venture plays mostly US + CN + NL.","closingBy":"n/a"},"verdict":"late","datedPrediction":"Not applicable \u2014 Canadian chip venture ecosystem too thin for Diagram-shaped play."},"painPoint":"HYPOTHESIS. Not developing \u2014 see outcome.","solution":"Not developing \u2014 see outcome.","marginLayers":[{"layer":"n/a","weightPct":100,"note":"not applicable"}],"referenceCostBase":"Global AI chip capex USD 400B+ 2026E","tamMethodology":[{"method":"benchmark-ACV","arithmetic":"n/a \u2014 categorically outside Diagram shape","sourceComparable":"n/a","result":"n/a"},{"method":"value-based","arithmetic":"n/a","sourceComparable":"n/a","result":"n/a"}],"tamBase":"n/a \u2014 capital intensity + fab dependency kills studio thesis","buyerLevelSanity":"n/a","competitors":{"direct":[{"name":"NVIDIA","founded":"1993","funding":"public mega-cap","geography":"US","threat":"HIGH"},{"name":"TSMC","founded":"1987","funding":"public","geography":"TW","threat":"HIGH"},{"name":"SK Hynix / Samsung","founded":"legacy","funding":"public","geography":"KR","threat":"HIGH"}],"substitutes":[{"name":"General-purpose x86 / ARM","note":"declining incumbent for AI workloads"}],"adjacentExtenders":[{"name":"Canadian photonics (small cluster)","structuralReasonNotDirect":"Thin ecosystem, lacks fab access"}]},"statusQuo":"NVIDIA + TSMC + Samsung own AI chip supply \u2014 real incumbent globally.","climateImpact":"Indirect \u2014 chip efficiency matters for data center emissions.","unfairAdvantage":[{"assetName":"None specific","category":"execution","stressTest":{"specific":false,"headStart":"0","exclusive":false,"relevant":false},"affinityCheck":{"primaryRelationship":"no","internalOwner":"none","lastContactDate":"n/a","loggedConversationsOnTheme":"nothing logged \u2014 HYPOTHETICAL"}}],"honestGaps":"Everything. No chip ecosystem in Canada beyond photonics niche; no fab access; no team.","graveyard":"Decades of Canadian attempts to establish semiconductor ventures (Nortel, ATI acquired by AMD 2006). Cause of death: fab + ecosystem dependency.","threeYearCounterfactual":"Could this have been built in 2023? No \u2014 same reasons.","keyRisks":[{"type":"condition","subject":"Capital intensity","mechanism":"USD 1B+ per competitive bet.","likelihood":"certain","response":"n/a"},{"type":"condition","subject":"Fab dependency","mechanism":"Requires TSMC/Samsung relationship.","likelihood":"certain","response":"n/a"},{"type":"actor-move","subject":"Hyperscaler in-house silicon","mechanism":"Google TPU, AWS Trainium, Meta MTIA all in-house.","likelihood":"certain","response":"n/a"}],"sourceValidation":{"score":40,"recency":20,"reputability":15,"corroboration":5,"note":"Landscape context only."},"confidence":"2/4 streams","killRisk":"Capital intensity + fab dependency + no Canadian ecosystem = not studio-shaped.","marginFlag":{"level":"orange","note":"Not applicable \u2014 capital returns, not venture scale."},"previouslyExplored":{"number":19,"name":"JetScale","note":"Diagram has active JetScale (#19) Cloud Computing exploration \u2014 adjacent but distinct (software layer vs chip)."},"scores":{"pain":2,"market":5,"timing":1,"solution":1,"advantage":1,"impact":2,"defensibility":4},"gates":{"market":{"result":"for","note":"massive but not addressable"},"timing":{"result":"against","note":"first-movers established + capital-intensive"},"margin":{"result":"against","note":"capital-intensive"},"rightToWin":{"result":"against","note":"no ecosystem"},"killTest":{"result":"against","note":"NVIDIA + TSMC + hyperscaler in-house"},"scope":{"result":"against","note":"out of climate thesis scope"}},"gateVerdict":"KILL \u2014 retained as landscape context per full-retention. Largest Oct cluster but categorically out of Diagram shape.","outcome":"kill","id":"ai-chip-semiconductor-supply-chain-landscape-context","rank":8,"weightedScore":2.25}],"counts":{"advance":2,"investigate":5,"park":0,"kill":1}},"landscape":[{"cluster":"ai_chip_semi","label":"AI chip / semiconductor","n":22,"pct":5.39,"canadianCount":0,"canadianCompanies":[],"gap":"whitespace","cardId":"ai-chip-semiconductor-supply-chain-landscape-context","note":"Dense global supply, thin Canadian equivalent."},{"cluster":"data_center_power","label":"Data center power/cooling","n":11,"pct":2.7,"canadianCount":1,"canadianCompanies":["Green Data (Systems and Information Management)"],"gap":"forming","cardId":"behind-the-meter-renewable-dc-infrastructure-developer","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"robotics_industrial","label":"Industrial robotics","n":11,"pct":2.7,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"carbon_removal_mineralization","label":"Carbon removal / mineralization","n":7,"pct":1.72,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"biomaterials_bioplastic","label":"Bioplastics / biomaterials","n":6,"pct":1.47,"canadianCount":1,"canadianCompanies":["Tydra Labs"],"gap":"forming","cardId":"waste-feedstock-biomaterials-for-packaging-replacement","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"data_center_renewable","label":"Renewable DC infrastructure","n":5,"pct":1.23,"canadianCount":1,"canadianCompanies":["Green Data (Systems and Information Management)"],"gap":"forming","cardId":"behind-the-meter-renewable-dc-infrastructure-developer","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"autonomous_drones","label":"Autonomous drones","n":5,"pct":1.23,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"nuclear_smr","label":"Nuclear / SMR","n":4,"pct":0.98,"canadianCount":1,"canadianCompanies":["Daedal Systems"],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"water_reuse","label":"Water reuse","n":3,"pct":0.74,"canadianCount":1,"canadianCompanies":["Tydra Labs"],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"methane_mrv","label":"Methane monitoring","n":3,"pct":0.74,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"battery_cell_mfg","label":"Battery cell mfg","n":3,"pct":0.74,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"grid_der_vpp","label":"Grid DER / VPP","n":3,"pct":0.74,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"ev_charging","label":"EV charging","n":2,"pct":0.49,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"heat_pump_building","label":"Heat pumps / buildings","n":2,"pct":0.49,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"cold_chain_perishable","label":"Cold-chain perishable","n":2,"pct":0.49,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"green_cement_steel","label":"Green cement / steel","n":2,"pct":0.49,"canadianCount":1,"canadianCompanies":["Cura (Raw Materials (Non-Wood))"],"gap":"forming","cardId":"low-carbon-electrochemical-cement-canadian-anchor","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"critical_minerals","label":"Critical minerals","n":2,"pct":0.49,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"climate_risk_analytics","label":"Climate risk analytics","n":2,"pct":0.49,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":"climate-risk-decision-platform-for-canadian-municipalities","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"fusion_direct","label":"Fusion (direct)","n":2,"pct":0.49,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"fusion_pick_shovel","label":"Fusion picks-and-shovels","n":1,"pct":0.25,"canadianCount":1,"canadianCompanies":["Daedal Systems"],"gap":"forming","cardId":"fusion-picks-and-shovels-canadian-supply-chain","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"autonomous_offroad_ev","label":"Autonomous off-road EVs","n":1,"pct":0.25,"canadianCount":1,"canadianCompanies":["BeOnyx"],"gap":"forming","cardId":"autonomous-electric-off-road-work-vehicles-mining-forestry","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"biopesticide_biostimulant","label":"Biological crop protection","n":1,"pct":0.25,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":"next-generation-biological-crop-protection-mrna-rnai","note":"Early global supply. Prime material if buyer motion clear."},{"cluster":"circular_textile_apparel","label":"Textile recycling","n":1,"pct":0.25,"canadianCount":0,"canadianCompanies":[],"gap":"forming","cardId":null,"note":"Early global supply. Prime material if buyer motion clear."}],"explored":[{"n":1,"name":"Novisto","status":"active","tag":"ESG Reporting Platform","cluster":"carbon_accounting_MRV"},{"n":2,"name":"Carbon Credit Markets","status":"killed","tag":"carbon credits","cluster":"carbon_accounting_MRV"},{"n":3,"name":"Obeo","status":"active","tag":"RNG Project Development","cluster":"methane_monitoring"},{"n":4,"name":"Cedar","status":"killed","tag":"Forest Carbon Credits","cluster":"carbon_removal_dac"},{"n":5,"name":"Clima","status":"killed","tag":"Carbon Insetting/Regenerative Agriculture","cluster":"precision_agriculture"},{"n":6,"name":"B2C Sustainability","status":"killed","tag":"B2C","cluster":null},{"n":7,"name":"Tax Equity Marketplace","status":"killed","tag":"Tax Equity","cluster":null},{"n":8,"name":"Built Environment & Electrification","status":"on ice","tag":"building elect","cluster":"building_electrification"},{"n":9,"name":"reliON","status":"active","tag":"Charger Reliability-as-a-Service","cluster":"ev_charging"},{"n":10,"name":"Motivus","status":"killed","tag":"Renewables developer DD","cluster":"solar_pv"},{"n":11,"name":"ARGO","status":"active","tag":"Agronomist Co-Pilot","cluster":"precision_agriculture"},{"n":12,"name":"Smart Yard","status":"on ice","tag":"Trimac/McVestco Co-Build","cluster":null},{"n":13,"name":"NewCo - Food Waste","status":"killed","tag":"Food Waste","cluster":"food_waste"},{"n":14,"name":"Supply Chain Resilience","status":"on ice","tag":null,"cluster":null},{"n":15,"name":"Lyteflo","status":"active","tag":"EV Solutions-as-a-Service","cluster":"ev_fleet_heavyduty"},{"n":16,"name":"Satellite-Based Insights","status":"active","tag":"Sat insights","cluster":null},{"n":17,"name":"VigilEye","status":"killed","tag":"Automated Resilient Sourcing","cluster":null},{"n":18,"name":"ArctIQ","status":"active","tag":"Commercial Refrigeration Optimisation","cluster":null},{"n":19,"name":"JetScale","status":"active","tag":"Cloud Computing","cluster":"data_center_cooling_power"},{"n":20,"name":"Biodiversity & Nature Finance","status":"on ice","tag":null,"cluster":null},{"n":21,"name":"B2B Metals Marketplace","status":"killed","tag":"B2B Metals","cluster":"critical_minerals_mining"},{"n":22,"name":"Tradeloom","status":"active","tag":"Green Trades Knowledge Codification","cluster":"heat_pumps"},{"n":22,"name":"HyperQuote","status":"active","tag":"Quote / trades","cluster":"heat_pumps"},{"n":23,"name":"Textiles & Sustainability","status":"killed","tag":null,"cluster":null},{"n":24,"name":"Telecommunications","status":"killed","tag":null,"cluster":null},{"n":25,"name":"NewCo - Refrigerants","status":"active","tag":"Refrigerants","cluster":null},{"n":26,"name":"GenAI Product Design","status":"active","tag":null,"cluster":null},{"n":27,"name":"TaktIQ","status":"active","tag":"AI Continuous Improvement Engineer","cluster":"industrial_robotics"},{"n":28,"name":"NewCo - BESS","status":"active","tag":"Battery Energy Storage Systems","cluster":"long_duration_storage"},{"n":29,"name":"Cellera","status":"active","tag":"VPP in Canada / BaaS","cluster":"grid_der_vpp"},{"n":30,"name":"Surplus Solutions","status":"on ice","tag":"food surplus","cluster":"food_waste"},{"n":31,"name":"NewCo - Water","status":"on ice","tag":"water","cluster":"water_treatment"},{"n":32,"name":"Sustainable diapers","status":"active","tag":null,"cluster":null},{"n":33,"name":"Commercial Energy","status":"active","tag":"Econoler Exploration","cluster":"building_electrification"},{"n":34,"name":"Standard Grid","status":"active","tag":"grid","cluster":"grid_transmission_hardware"},{"n":35,"name":"Aquaponics/Sandponics","status":"active","tag":"iAVS","cluster":null},{"n":36,"name":"Energy Robotics","status":"active","tag":null,"cluster":"industrial_robotics"},{"n":37,"name":"Home Electrification","status":"active","tag":"home elect","cluster":"heat_pumps"},{"n":38,"name":"Derivatives Infrastructure for Energy Asset Owners","status":"active","tag":null,"cluster":"grid_der_vpp"},{"n":39,"name":"Packet.io","status":"active","tag":null,"cluster":"data_center_cooling_power"},{"n":40,"name":"Data Enablement for Utilities","status":"active","tag":null,"cluster":"grid_der_vpp"},{"n":41,"name":"Lythos","status":"active","tag":"Critical Minerals","cluster":"critical_minerals_mining"},{"n":42,"name":"Cold Chains Spoilage Mitigation","status":"active","tag":null,"cluster":"precision_agriculture"},{"n":43,"name":"Agentic AI Harnessing & Guardrails","status":"active","tag":null,"cluster":null},{"n":44,"name":"NewCo - Water","status":"active","tag":"water v2","cluster":"water_treatment"},{"n":45,"name":"Industrial Process Optimization","status":"active","tag":null,"cluster":"industrial_heat"},{"n":46,"name":"Industrial Flexible-Load OS","status":"active","tag":null,"cluster":"industrial_heat"},{"n":47,"name":"AI First Engineering","status":"active","tag":null,"cluster":null}]}</script>
+<script>
+(function(){
+"use strict";
+const DATA = JSON.parse(document.getElementById('tof-data').textContent);
+const R = DATA.run, L = DATA.landscape, E = DATA.explored;
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc = s => (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS_OVR = 'tof-overrides-v1', LS_OPEN='tof-open-v1', LS_NAME='tof-user-name-v1';
+function LSget(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function LSset(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const overrides = LSget(LS_OVR,{});
+const openState = LSget(LS_OPEN,{});
+
+// weightedScore recompute (with overrides)
+const W={pain:.20,market:.20,timing:.15,solution:.15,advantage:.15,impact:.10,defensibility:.05};
+function effectiveScores(c){
+  const s={...c.scores};
+  Object.keys(W).forEach(k=>{
+    const o = overrides[c.id+':'+k];
+    if(o!=null && !isNaN(o)) s[k]=Math.max(1,Math.min(5,o));
+  });
+  return s;
+}
+function weight(c){const s=effectiveScores(c);return +Object.keys(W).reduce((a,k)=>a+s[k]*W[k],0).toFixed(2)}
+function scoreColorClass(w){return w>=3.5?'hi':(w>=2.8?'md':'lo')}
+
+// HEADER
+$('#rundate').textContent = R.runDate + ' &#183; ' + R.runMode;
+$('#subline').innerHTML = R.extractSources.map(esc).join('<span class="sep">&#183;</span>') +
+  '<span class="sep">&#183;</span>' + R.streams + ' streams<span class="sep">&#183;</span>doctrine ' + esc(R.doctrineVersion);
+const stats = [
+  {k:'Companies',v:R.unifiedCount.toLocaleString(),cls:''},
+  {k:'Canadian',v:R.canadianCount,cls:'p'},
+  {k:'Advance',v:R.counts.advance,cls:'g'},
+  {k:'Investigate',v:R.counts.investigate,cls:'y'},
+  {k:'Park',v:R.counts.park,cls:'p'},
+  {k:'Kill',v:R.counts.kill,cls:'r'}
+];
+$('#stats').innerHTML = stats.map(s=>`<div class="stat ${s.cls}"><div class="k">${s.k}</div><div class="v">${s.v}</div></div>`).join('');
+
+// TL;DR
+const tldr = [
+  `<strong>2 clean ADVANCEs</strong> in this run &#8212; <em>Heat-pump installer marketplace</em> (4.10) and <em>Grid-edge DER orchestrator</em> (3.95). Both ride Ontario 2026 regulatory catalysts (HRS rebate + IESO DSC amendment May 1). Launch-customer intro is the single blocker on each.`,
+  `<strong>Data-center flex-load</strong> (3.60) escalated to ADVANCE despite thin right-to-win because Meta Sturgeon County 970 MW timing forces a 4-week window: identify the Canadian wedge (co-locator or AESO regulatory partnership) or lose the space to Emerald AI.`,
+  `<strong>3 cards flagged previously-explored with new evidence:</strong> Grid DER (Cellera #29 &#8212; regulatory catalyst now real), Heat-pump marketplace (Home Electrification #37 &#8212; HRS + Greener Homes closure consolidates channel), Cold-chain (#42 &#8212; redundant, fold in).`,
+  `<strong>Wildfire cluster is dense but head-started</strong>: Skyward (lightning) + FireSwarm/Shearwater/Arcanus (suppression drones) &#8212; 3 concurrent Canadian 2026 rounds. Head-on entry fails kill test; only paths are acquisition or insurance-channel flanking.`,
+  `<strong>2 KILLs retained as landscape:</strong> SMR (capital + timeline not studio-shaped) and DAC (Carbon Engineering already Canadian anchor). Per full-retention doctrine, visible not filtered.`,
+  `<strong>Archetype spread:</strong> software (5), asset-owner-operator (4), physical (3), marketplace (1), tech-enabled service (1) &#8212; 5 archetypes. Passes the archetype-spread rule.`
+];
+$('#tldr').innerHTML = '<div class="h">TL;DR &#8212; what to do next</div><ul>'+tldr.map(t=>`<li>${t}</li>`).join('')+'</ul>';
+
+// helpers
+function outcomeChip(o){return `<span class="chip o-${o==='advance'?'adv':o==='investigate'?'inv':o}">${o.toUpperCase()}</span>`;}
+function tinyRubric(c){
+  const s=effectiveScores(c); const max=Math.max(...Object.values(s));
+  return `<div class="mini">`+Object.entries(s).map(([k,v])=>{const top=(v===max);return `<span class="b${top?' top':''}" style="height:${v*20}%" title="${k}: ${v}"></span>`}).join('')+`</div>`;
+}
+function flagChips(c){
+  const chips=[];
+  if(c.country==='Canada') chips.push('<span class="chip ca">&#127464;&#127462; CA</span>');
+  if(c.previouslyExplored) chips.push(`<span class="chip exp">&#9672; #${c.previouslyExplored.number}</span>`);
+  if(c.marginFlag) chips.push('<span class="chip mflag">&#9888; margin</span>');
+  const hi=(c.keyRisks||[]).some(r=>/(^|\W)high($|\W)/i.test(r.likelihood||''));
+  if(hi) chips.push('<span class="chip hi">&#128314; risk</span>');
+  return chips.join('');
+}
+
+// RANKING TABLE
+function renderRank(){
+  const cards=[...R.cards].sort((a,b)=>weight(b)-weight(a));
+  const html=[`<div class="rt-head">
+    <span data-s="rank">#</span>
+    <span data-s="name">Idea</span>
+    <span data-s="outcome" class="oc">Outcome</span>
+    <span data-s="category" class="rcat">Category</span>
+    <span data-s="score">Score</span>
+    <span class="rmini">Rubric</span>
+    <span class="rfl">Flags</span>
+    <span></span>
+  </div>`];
+  cards.forEach((c,i)=>{
+    const w=weight(c); const sc=scoreColorClass(w);
+    html.push(`<div class="rt-row ${c.outcome==='kill'?'dim':''}" data-id="${esc(c.id)}" title="${esc(c.oneLiner)}">
+      <div class="r">${i+1}</div>
+      <div class="idea"><div class="n">${esc(c.name)}</div></div>
+      <div class="oc">${outcomeChip(c.outcome)}</div>
+      <div><span class="cat">${esc(c.category)}</span></div>
+      <div class="sc ${sc}">${w.toFixed(2)}</div>
+      <div>${tinyRubric(c)}</div>
+      <div class="flags">${flagChips(c)}</div>
+      <div class="caret">&#8250;</div>
+    </div>`);
+  });
+  $('#ranktable').innerHTML=html.join('');
+  $$('.rt-row').forEach(r=>{
+    r.addEventListener('click',()=>{
+      const id=r.getAttribute('data-id');
+      const el=document.getElementById('card-'+id);
+      if(el){ if(!el.classList.contains('open')){el.classList.add('open'); openState[id]=true; LSset(LS_OPEN,openState);}
+        el.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    });
+  });
+}
+
+// CARDS
+function renderCards(){
+  const search=$('#search').value.toLowerCase().trim();
+  const f_out=$('#filter-outcome').value;
+  const sort=$('#sort').value;
+  let cards=R.cards.filter(c=>{
+    if(f_out && c.outcome!==f_out) return false;
+    if(search){
+      const t=(c.name+' '+c.oneLiner+' '+c.signal+' '+(c.painPoint||'')+' '+(c.solution||'')+' '+c.category).toLowerCase();
+      if(!t.includes(search)) return false;
+    }
+    return true;
+  });
+  if(sort==='score') cards.sort((a,b)=>weight(b)-weight(a));
+  else if(sort==='name') cards.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sort==='category') cards.sort((a,b)=>(a.category||'').localeCompare(b.category||''));
+  else if(sort==='outcome'){
+    const rk={advance:1,investigate:2,park:3,kill:4};
+    cards.sort((a,b)=>(rk[a.outcome]-rk[b.outcome])||(weight(b)-weight(a)));
+  } else cards.sort((a,b)=>a.rank-b.rank);
+  $('#cardcount').textContent = `${cards.length} of ${R.cards.length}`;
+  $('#cards').innerHTML = cards.map(renderCard).join('');
+  attachHandlers();
+}
+function renderCard(c){
+  const w=weight(c); const sc=scoreColorClass(w);
+  const oclass=c.outcome==='advance'?'adv':c.outcome==='investigate'?'inv':c.outcome;
+  const chips=[
+    outcomeChip(c.outcome),
+    `<span class="chip pat">&#8599; ${esc(c.breakInPattern)}</span>`,
+    `<span class="chip arch">${esc(c.archetype)}</span>`,
+    c.country==='Canada'?'<span class="chip ca">&#127464;&#127462; Canada</span>':'',
+    c.previouslyExplored?`<span class="chip exp">&#9672; #${c.previouslyExplored.number} ${esc(c.previouslyExplored.name)}</span>`:''
+  ].filter(Boolean).join('');
+  const isOpen = openState[c.id]===true;
+  return `<article class="card ${oclass} ${isOpen?'open':''}" id="card-${esc(c.id)}" data-id="${esc(c.id)}">
+    <div class="card-head">
+      <div class="r">#${c.rank}</div>
+      <div class="title">
+        <div class="n">${esc(c.name)}</div>
+        <div class="o">${esc(c.oneLiner)}</div>
+        <div class="chips">${chips}</div>
+      </div>
+      <div class="weight"><div class="s ${sc}">${w.toFixed(2)}</div><div class="l">Weighted</div></div>
+      <div class="caret">&#9654;</div>
+    </div>
+    <div class="card-body">${renderBody(c)}</div>
+  </article>`;
+}
+function renderBody(c){
+  const s=effectiveScores(c); const max=Math.max(...Object.values(s));
+  const rubricKeys=['pain','market','timing','solution','advantage','impact','defensibility'];
+  const rubric = `<div><div class="sec-lbl">Rubric &#8212; click any score to override</div><div class="rubric">${rubricKeys.map(k=>{
+    const v=s[k]; const top=v===max; const dim=k==='defensibility';
+    return `<div class="c ${dim?'dim':''}" data-cid="${esc(c.id)}" data-crit="${k}"><div class="k">${k}</div><div class="v">${v}</div><div class="bar"><span style="width:${v*20}%"></span></div></div>`
+  }).join('')}</div></div>`;
+
+  // clocks
+  const tc=c.threeClocks||{};
+  const cl_e=tc.enabling||{}; const cl_b=tc.budget||{}; const cl_c=tc.competitive||{};
+  const clocks=`<div><div class="sec-lbl">Three clocks (v3) &#8212; dated prediction the whole card commits to</div>
+    <div class="clocks">
+      <div class="clock ${cl_e.rung?'rung':''}"><div class="k">enabling <span class="gl">${cl_e.rung?'&#10003; rung':'&#9675; unrung'}</span></div>
+        <div class="body">${esc(cl_e.evidence||'')}</div><div class="date">Rang: ${esc(cl_e.date||'&#8212;')}</div></div>
+      <div class="clock ${cl_b.rung?'rung':''}"><div class="k">budget <span class="gl">${cl_b.rung?'&#10003; rung':'&#9675; unrung'}</span></div>
+        <div class="body">${esc(cl_b.evidence||'')}</div><div class="date">First purchase: ${esc(cl_b.firstPurchaseDate||'&#8212;')}</div></div>
+      <div class="clock ${cl_c.status==='closing'?'closing':cl_c.status==='closed'?'late':''}"><div class="k">competitive <span class="gl">${cl_c.status==='closing'?'&#9888; closing':cl_c.status==='closed'?'&#10007; closed':'&#9675; open'}</span></div>
+        <div class="body">${esc(cl_c.closingEvent||'')}</div><div class="date">Closing by: ${esc(cl_c.closingBy||'&#8212;')}</div></div>
+    </div>
+    <div class="verdict"><div class="k">verdict &#8212; dated prediction</div><div class="v"><span class="badge">${esc(tc.verdict||'')}</span>${esc(tc.datedPrediction||'')}</div></div>
+  </div>`;
+
+  // pain / solution
+  const pain=`<div><div class="sec-lbl">Pain point (hypothesis)</div><div class="hyp"><span class="k">HYPOTHESIS</span>${esc((c.painPoint||'').replace(/^HYPOTHESIS\.\s*/,''))}</div></div>`;
+  const solution=`<div><div class="sec-lbl">Solution hypothesis</div><div class="named">${esc(c.solution||'')}</div></div>`;
+
+  // margin layers
+  const ml=(c.marginLayers||[]).map(m=>`<div class="mlayer"><span class="l">${esc(m.layer)}</span><span class="w">${m.weightPct}%</span><span class="n">${esc(m.note||'')}</span></div>`).join('');
+  const marginLayers=`<div><div class="sec-lbl">Margin layers &#8212; where the &gt;60% comes from</div><div class="mlayers">${ml}</div></div>`;
+
+  // TAM
+  const methods=(c.tamMethodology||[]).map(m=>`<div class="tam-method">
+    <div class="k">${esc(m.method)}</div>
+    <div class="a">${esc(m.arithmetic)}</div>
+    <div class="s">${esc(m.sourceComparable)}</div>
+    <div class="r">${esc(m.result)}</div></div>`).join('');
+  const tam=`<div><div class="sec-lbl">TAM (v3 methodology) &#8212; &#8805;2 methods, cross-checked</div>
+    <div class="tam">
+      <div class="rc"><b>Reference cost base &#8800; TAM.</b> ${esc(c.referenceCostBase||'')}</div>
+      <div class="tam-methods">${methods}</div>
+      <div class="base"><b>Base TAM</b>${esc(c.tamBase||'')}</div>
+      <div class="san">${esc(c.buyerLevelSanity||'')}</div>
+    </div></div>`;
+
+  // competitor triad
+  const comp=c.competitors||{};
+  const direct=(comp.direct||[]).map(x=>`<div class="entry"><div class="n">${esc(x.name)} <span class="thr ${(x.threat||'').replace(/\s+/g,'.')}">${esc(x.threat||'')}</span></div><div class="meta">${esc(x.founded||'?')} &#183; ${esc(x.funding||'?')} &#183; ${esc(x.geography||'?')}</div></div>`).join('');
+  const subs=(comp.substitutes||[]).map(x=>`<div class="entry"><div class="n">${esc(x.name)}</div><div class="note">${esc(x.note||'')}</div></div>`).join('');
+  const adj=(comp.adjacentExtenders||[]).map(x=>`<div class="entry"><div class="n">${esc(x.name)}</div><div class="note"><b>Not direct because:</b> ${esc(x.structuralReasonNotDirect||'')}</div></div>`).join('');
+  const triad=`<div><div class="sec-lbl">Competitor triad &#8212; direct / substitute / adjacent extender (v3)</div>
+    <div class="triad">
+      <div class="tcol"><div class="k">direct</div>${direct||'<div class="entry"><div class="note" style="color:var(--fg-dim)">none identified</div></div>'}</div>
+      <div class="tcol"><div class="k">substitutes</div>${subs}</div>
+      <div class="tcol"><div class="k">adjacent extenders</div>${adj}</div>
+    </div>
+    <div class="statusquo"><div class="k">Status quo (real incumbent &#8212; mandatory v3 field)</div><div class="v">${esc(c.statusQuo||'')}</div></div>
+  </div>`;
+
+  // counter-case
+  const counter=`<div><div class="sec-lbl">Counter-case (mandatory)</div>
+    <div class="counter">
+      <div class="b"><div class="k">graveyard &#8212; who tried this ~2012-2020 &amp; cause of death</div><div class="v">${esc(c.graveyard||'')}</div></div>
+      <div class="b"><div class="k">three-year counterfactual &#8212; could this have been built in 2023?</div><div class="v">${esc(c.threeYearCounterfactual||'')}</div></div>
+    </div></div>`;
+
+  // key risks
+  const risks=(c.keyRisks||[]).slice(0,5).map(r=>{
+    const lk=(r.likelihood||'').toLowerCase().split(/[\s&#8212;-]/)[0].replace(/[^a-z-]/g,'');
+    return `<div class="risk">
+      <div class="rh"><span class="tp ${r.type}">${esc(r.type)}</span><span class="lk ${lk}">${esc((r.likelihood||'').split('&#8212;')[0].trim())}</span></div>
+      <div class="mech"><b>${esc(r.subject)}</b> &#8212; ${esc(r.mechanism)}</div>
+      <div class="resp"><b>If it happens:</b> ${esc(r.response)}</div>
+    </div>`;
+  }).join('');
+  const overCap = (c.keyRisks||[]).length>5?`<div style="color:var(--orange);font-size:11.5px;margin-top:6px;font-family:var(--mono)">&#9888; spec cap is 3-5 &#8212; ${(c.keyRisks||[]).length} shown, ranking work may not be done</div>`:'';
+  const riskBlock=`<div><div class="sec-lbl">Key risks &amp; questions (3-5 items)</div><div class="risks">${risks}</div>${overCap}</div>`;
+
+  // climate impact
+  const climate=`<div><div class="sec-lbl">Climate impact</div><div class="named">${esc(c.climateImpact||'')}</div></div>`;
+
+  // right to win
+  const rtwEntries=(c.unfairAdvantage||[]).map(u=>{
+    const st=u.stressTest||{};
+    return `<div class="rtw-asset">
+      <div class="h"><div class="n">${esc(u.assetName||'')}</div><span class="chip pat">${esc(u.category||'')}</span></div>
+      <div class="stress">
+        <span class="b ${st.specific?'pass':'fail'}">Specific ${st.specific?'&#10003;':'&#10007;'}</span>
+        <span class="b">Head-start: ${esc(String(st.headStart||'&#8212;'))}</span>
+        <span class="b ${st.exclusive?'pass':'fail'}">Exclusive ${st.exclusive?'&#10003;':'&#10007;'}</span>
+        <span class="b ${st.relevant?'pass':'fail'}">Relevant ${st.relevant?'&#10003;':'&#10007;'}</span>
+      </div>
+      <div class="aff">
+        <span class="k">primary rel</span><span class="v">${esc(u.affinityCheck?.primaryRelationship||'&#8212;')}</span>
+        <span class="k">owner</span><span class="v">${esc(u.affinityCheck?.internalOwner||'&#8212;')}</span>
+        <span class="k">last contact</span><span class="v">${esc(u.affinityCheck?.lastContactDate||'&#8212;')}</span>
+        <span class="k">logged</span><span class="v ${/hypothetical/i.test(u.affinityCheck?.loggedConversationsOnTheme||'')?'hypo':''}">${esc(u.affinityCheck?.loggedConversationsOnTheme||'&#8212;')}</span>
+      </div>
+    </div>`;
+  }).join('');
+  const gaps=c.honestGaps?`<div class="honestgaps"><div class="k">Honest gaps (mandatory)</div><div class="v">${esc(c.honestGaps)}</div></div>`:`<div class="honestgaps" style="background:var(--red-soft);border-color:rgba(171,20,16,0.42)"><div class="k" style="color:var(--red-text)">&#9888; honest gaps missing</div><div class="v">Right-to-win section is cheerleading &#8212; reject the card until populated.</div></div>`;
+  const rtw=`<div><div class="sec-lbl">Unfair advantage &#8212; ${(c.unfairAdvantage||[]).length} candidate assets</div><div class="rtw">${rtwEntries}</div>${gaps}</div>`;
+
+  // margin flag (optional)
+  const marginFlag = c.marginFlag ? `<div class="mflag-box"><div class="k">&#9888; margin flag &#8212; ${esc(c.marginFlag.level||'orange')}</div><div class="v">${esc(c.marginFlag.note||'')}</div></div>`:'';
+
+  // kill risk
+  const killRisk = c.killRisk ? `<div class="kill-box"><div class="k">kill risk (one honest line)</div><div class="v">${esc(c.killRisk)}</div></div>`:'';
+
+  // previously-explored full callout in body
+  const expCallout = c.previouslyExplored ? `<div class="exp-callout"><div class="k">&#9672; Previously explored &#8212; newco #${c.previouslyExplored.number} &#183; ${esc(c.previouslyExplored.name)}</div>${esc(c.previouslyExplored.note||'')}</div>`:'';
+
+  // gate verdict
+  const gv = `<div class="verdict" style="border-color:rgba(255,255,255,0.14);background:var(--bg-3)"><div class="k" style="color:var(--fg)">Gate verdict</div><div class="v">${esc(c.gateVerdict||'')}</div></div>`;
+
+  // confidence + source validation
+  const conf = `<div style="display:flex;gap:16px;flex-wrap:wrap;color:var(--fg-mute);font-size:11.5px;font-family:var(--mono)">
+    <span>Confidence: <b style="color:var(--fg)">${esc(c.confidence||'?')}</b></span>
+    <span>Source validation: <b style="color:var(--fg)">${c.sourceValidation?.score||0}/100</b> (rec ${c.sourceValidation?.recency||0} + rep ${c.sourceValidation?.reputability||0} + corr ${c.sourceValidation?.corroboration||0})</span>
+  </div>`;
+
+  return `<div class="sig"><span class="k">&#128225; SIGNAL</span><span>${esc(c.signal||'')}</span></div>
+    ${expCallout}
+    ${c.priorContext?`<div class="plain"><span class="k">Prior-knowledge quarantine (R3)</span>${esc(c.priorContext)}</div>`:''}
+    ${rubric}
+    ${clocks}
+    ${pain}
+    ${solution}
+    ${marginLayers}
+    ${tam}
+    ${triad}
+    ${counter}
+    ${riskBlock}
+    ${climate}
+    ${rtw}
+    ${marginFlag}
+    ${killRisk}
+    ${gv}
+    ${conf}`;
+}
+function attachHandlers(){
+  $$('.card').forEach(el=>{
+    const head=el.querySelector('.card-head');
+    head.addEventListener('click',(e)=>{
+      if(e.target.closest('.rubric')) return;
+      el.classList.toggle('open');
+      openState[el.getAttribute('data-id')]=el.classList.contains('open');
+      LSset(LS_OPEN,openState);
+    });
+  });
+  $$('.rubric .c').forEach(el=>{
+    el.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const cid=el.getAttribute('data-cid'); const crit=el.getAttribute('data-crit');
+      const cur=overrides[cid+':'+crit]||'';
+      const v=prompt(`Override ${crit} score (1-5, blank to reset):`,cur);
+      if(v===null) return;
+      if(v.trim()==='') delete overrides[cid+':'+crit];
+      else {const n=parseInt(v);if(!isNaN(n)&&n>=1&&n<=5) overrides[cid+':'+crit]=n;}
+      LSset(LS_OVR,overrides);
+      renderCards(); renderRank();
+      showToast('Score override saved');
+    });
+  });
+}
+
+// LANDSCAPE
+function renderLandscape(){
+  const html=[`<div class="lt-head"><span>Cluster</span><span>Input share</span><span>Canada gap</span><span class="lnote">Note</span></div>`];
+  L.forEach(l=>{
+    const covered=l.cardId?'<span class="cov">&#10003; covered by card</span>':'';
+    const ca=l.canadianCount>0?`<div class="ca">CA: ${l.canadianCompanies.slice(0,4).join(', ')}${l.canadianCount>4?'&#8230;':''}</div>`:'';
+    html.push(`<div class="lt-row">
+      <div class="cl">${esc(l.label)}<div class="cn">${esc(l.cluster)}</div></div>
+      <div class="n">${l.n} <span class="p">(${l.pct}%)</span></div>
+      <div><span class="gap-chip ${l.gap}">${l.gap}</span></div>
+      <div class="note">${esc(l.note)}${covered}${ca}</div>
+    </div>`);
+  });
+  $('#landscape').innerHTML=html.join('');
+}
+
+// FOOTER
+$('#footinfo').innerHTML = `Run generated <b style="color:var(--fg)">${R.runDate}</b> from ${R.extractSources.length} extract source${R.extractSources.length===1?'':'s'} &#183; ${L.length} clusters landscaped &#183; ${E.length} previously-explored newcos cross-checked (R6, after card drafting) &#183; doctrine ${esc(R.doctrineVersion)}.`;
+$('#footmeta').textContent = 'Reasoning-only board. No calls, no memo. Every claim marked HYPOTHESIS until downstream validation. Overrides saved to your browser only.';
+
+// TOAST + COPY
+function showToast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2000)}
+$('#copybtn').addEventListener('click',()=>{
+  const out=[`Diagram TOF Run &#8212; ${R.runDate} (${R.doctrineVersion})`,''];
+  ['advance','investigate','park','kill'].forEach(o=>{
+    const c=R.cards.filter(x=>x.outcome===o).sort((a,b)=>weight(b)-weight(a));
+    if(!c.length) return;
+    out.push(o.toUpperCase()+':');
+    c.forEach(x=>out.push(`  ${weight(x).toFixed(2)}  ${x.name}${x.previouslyExplored?` [prev-explored #${x.previouslyExplored.number}]`:''}`));
+    out.push('');
+  });
+  navigator.clipboard.writeText(out.join('\n')).then(()=>showToast('Decision summary copied to clipboard'));
+});
+$('#expandall').addEventListener('click',()=>{R.cards.forEach(c=>openState[c.id]=true);LSset(LS_OPEN,openState);renderCards()});
+$('#collapseall').addEventListener('click',()=>{R.cards.forEach(c=>openState[c.id]=false);LSset(LS_OPEN,openState);renderCards()});
+$('#search').addEventListener('input',renderCards);
+$('#filter-outcome').addEventListener('change',renderCards);
+$('#sort').addEventListener('change',renderCards);
+
+// INIT
+renderRank();
+renderCards();
+renderLandscape();
+// auto-open the top card
+if(Object.keys(openState).length===0){
+  const top=[...R.cards].sort((a,b)=>weight(b)-weight(a))[0];
+  if(top){openState[top.id]=true;LSset(LS_OPEN,openState);renderCards();}
+}
+})();
+</script>
